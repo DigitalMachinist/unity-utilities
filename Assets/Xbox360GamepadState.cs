@@ -1,0 +1,310 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using UnityEngine;
+using UnityEngine.Events;
+
+
+/// <summary>
+/// An enumeration of button signals that are emitted from the Xbox 360 Gamepad.
+/// </summary>
+public enum GamepadButton : byte
+{
+    NONE = 0,
+    A,
+    B,
+    X,
+    Y,
+    Back,
+    Start,
+    LAnalogBtn,
+    RAnalogBtn,
+    LBumper,
+    RBumper
+};
+
+
+/// <summary>
+/// An enumeration of control axes that are measured by the Xbox 360 Gamepad.
+/// </summary>
+public enum GamepadAxis : byte
+{
+    NONE = 0,
+    DPadX,
+    DPadY,
+    LAnalogX,
+    LAnalogY,
+    RAnalogX,
+    RAnalogY,
+    TriggerR,
+    TriggerL
+}
+
+
+/// <summary>
+/// 
+/// </summary>
+public class AxisEvent : UnityEvent<float> { }
+
+
+/// <summary>
+/// 
+/// </summary>
+public class ButtonEvent : UnityEvent<bool> { }
+
+
+/// <summary>
+/// A stateful representation of an Xbox 360 Gamepad that can automatically remain syncronized
+/// with Unity's Input Manager. By keeping the previous button state as well as the most current
+/// one, this class is able to detect when a button's state has changed and emit an event to
+/// notify other listeners.
+/// </summary>
+/// <remarks>
+/// This all is based on the assumption that positive x faces right, and positive y faces up.
+///          pos +y
+///             ^
+///             ^
+///  neg -x <<<<<>>>>> pos +x
+///             v
+///             v
+///          neg -y
+///</remarks>
+public class Xbox360Gamepad : MonoBehaviour
+{
+    #region Fields / Properties
+
+    [Header( "Configuration" )]
+    public int PlayerNum = 1;
+    public bool IsUpdating = true;
+    public bool IsDebugLogging = false;
+
+    private Dictionary<GamepadAxis, float> axesCurrent { get; set; }
+    private Dictionary<GamepadAxis, float> axesPrevious { get; set; }
+    private Dictionary<GamepadAxis, string> axesToUnityInputMap { get; set; }
+
+    private Dictionary<GamepadButton, bool> buttonsCurrent { get; set; }
+    private Dictionary<GamepadButton, bool> buttonsPrevious { get; set; }
+    private Dictionary<GamepadButton, string> buttonsToUnityInputMap { get; set; }
+
+    [Header( "A Button" )]
+    ButtonEvent AButtonDown;
+    ButtonEvent BButtonDown;
+    ButtonEvent XButtonDown;
+    ButtonEvent YButtonDown;
+    ButtonEvent BackButtonDown;
+    ButtonEvent StartButtonDown;
+    ButtonEvent LAnalogButtonDown;
+    ButtonEvent LBumperButtonDown;
+    ButtonEvent RAnalogButtonDown;
+    ButtonEvent RBumperButtonDown;
+
+    #endregion
+
+
+    #region Unity Message Handlers
+
+    void Start()
+    {
+        // Current and previous states of each control axis.
+        {
+            axesCurrent = new Dictionary<GamepadAxis, float>()
+            {
+                { GamepadAxis.DPadX, 0f },
+                { GamepadAxis.DPadY, 0f },
+                { GamepadAxis.LAnalogX, 0f },
+                { GamepadAxis.LAnalogY, 0f },
+                { GamepadAxis.RAnalogX, 0f },
+                { GamepadAxis.RAnalogY, 0f },
+                { GamepadAxis.TriggerL, 0f },
+                { GamepadAxis.TriggerR, 0f }
+            };
+            axesPrevious = new Dictionary<GamepadAxis, float>()
+            {
+                { GamepadAxis.DPadX, 0f },
+                { GamepadAxis.DPadY, 0f },
+                { GamepadAxis.LAnalogX, 0f },
+                { GamepadAxis.LAnalogY, 0f },
+                { GamepadAxis.RAnalogX, 0f },
+                { GamepadAxis.RAnalogY, 0f },
+                { GamepadAxis.TriggerL, 0f },
+                { GamepadAxis.TriggerR, 0f }
+            };
+        }
+
+        // Current and previous states of each button.
+        {
+            buttonsCurrent = new Dictionary<GamepadButton, bool>()
+            {
+                { GamepadButton.A, false },
+                { GamepadButton.B, false },
+                { GamepadButton.Back, false },
+                { GamepadButton.LAnalogBtn, false },
+                { GamepadButton.LBumper, false },
+                { GamepadButton.RAnalogBtn, false },
+                { GamepadButton.RBumper, false },
+                { GamepadButton.Start, false },
+                { GamepadButton.X, false },
+                { GamepadButton.Y, false }
+            };
+            buttonsPrevious = new Dictionary<GamepadButton, bool>()
+            {
+                { GamepadButton.A, false },
+                { GamepadButton.B, false },
+                { GamepadButton.Back, false },
+                { GamepadButton.LAnalogBtn, false },
+                { GamepadButton.LBumper, false },
+                { GamepadButton.RAnalogBtn, false },
+                { GamepadButton.RBumper, false },
+                { GamepadButton.Start, false },
+                { GamepadButton.X, false },
+                { GamepadButton.Y, false }
+            };
+        }
+
+
+        // Map from internal axis and buttons enums to Unity Input Manager keys.
+        {
+            // Convert the player num to a string once here because it gets read a lot.
+            var player = PlayerNum.ToString();
+
+            // Map from internal axis enum to Unity Input Manager joystick axes.
+            axesToUnityInputMap = new Dictionary<GamepadAxis, string>()
+            {
+                { GamepadAxis.DPadX, "DPad_XAxis_" + player },
+                { GamepadAxis.DPadY, "DPad_YAxis_" + player },
+                { GamepadAxis.LAnalogX, "L_XAxis_" + player },
+                { GamepadAxis.LAnalogY, "L_YAxis_" + player },
+                { GamepadAxis.RAnalogX, "R_XAxis_" + player },
+                { GamepadAxis.RAnalogY, "R_YAxis_" + player },
+                { GamepadAxis.TriggerL, "TriggersR_" + player },
+                { GamepadAxis.TriggerR, "TriggersL_" + player }
+            };
+
+            // Map from internal button enum to Unity Input Manager joystick buttons.
+            buttonsToUnityInputMap = new Dictionary<GamepadButton, string>()
+            {
+                { GamepadButton.A, "A_" + player },
+                { GamepadButton.B, "B_" + player },
+                { GamepadButton.Back, "X_" + player },
+                { GamepadButton.LAnalogBtn, "Y_" + player },
+                { GamepadButton.LBumper, "Back_" + player },
+                { GamepadButton.RAnalogBtn, "Start_" + player },
+                { GamepadButton.RBumper, "LS_" + player },
+                { GamepadButton.Start, "RS_" + player },
+                { GamepadButton.X, "LB_" + player },
+                { GamepadButton.Y, "RB_" + player }
+            };
+        }
+    }
+
+    void Update()
+    {
+        // Persist the current state as the previous state and sample the new current state out of 
+        // the Unity Input Manager.
+        {
+            // Note! 
+            // These are here to store copies of the maps' keys so that the maps can be modified 
+            // inside the following foreach loops -- otherwise they would throw exceptions.
+            var axesKeys = axesCurrent.Keys;
+            foreach ( GamepadAxis key in axesKeys )
+            {
+                axesPrevious[ key ] = axesCurrent[ key ];
+                axesCurrent[ key ] = Input.GetAxis( axesToUnityInputMap[ key ] );
+            }
+            var buttonsKeys = axesCurrent.Keys;
+            foreach ( GamepadButton key in buttonsKeys )
+            {
+                buttonsPrevious[ key ] = buttonsCurrent[ key ];
+                buttonsCurrent[ key ] = Input.GetButton( buttonsToUnityInputMap[ key ] );
+            }
+        }
+    }
+
+    #endregion
+
+    #region ButtonDown / ButtonUp
+
+    public bool IsButtonDown( GamepadButton b )
+    {
+        return ( buttonsCurrent[ b ] && !buttonsPrevious[ b ] );
+    }
+
+    public bool IsButtonUp( GamepadButton b )
+    {
+        return ( !buttonsCurrent[ b ] && buttonsPrevious[ b ] ) ;
+    }
+
+    #endregion
+
+    #region Axis Threshold Functions
+
+    /// <summary>  Check if an axis is past a threshold and was not the check before. </summary>
+    /// <remarks>  James, 2014-05-02. </remarks>
+    /// <param name="Axis">       The axis to check. </param>
+    /// <param name="Threshold">  The threashold between 0 and 1. </param>
+    /// <returns>
+    ///   true if the axis is past the threshold and previously was not, otherwise false.
+    /// </returns>
+    public bool AxisJustPastThreshold( GamepadAxis Axis, float Threshold )
+    {
+        float threshold = Mathf.Clamp( Threshold, -1f, 1f );
+
+        if ( threshold > 0 )
+        {
+            if ( axesCurrent[ Axis ] >= threshold && axesPrevious[ Axis ] < threshold )
+                return true;
+        }
+        else
+        {
+            if ( axesCurrent[ Axis ] < threshold && axesPrevious[ Axis ] > threshold )
+                return true;
+        }
+
+        return false;
+    }
+
+    #endregion
+
+    public override string ToString()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.Append( "Xbox 360 Gamepad " );
+        sb.Append( PlayerNum );
+        sb.Append( "\n\n" );
+
+        sb.AppendLine( "Axes:\n" );
+        foreach ( GamepadAxis key in axesCurrent.Keys )
+        {
+            sb.Append( key.ToString() );
+            sb.Append( ": \t" );
+            // if ( key != GamepadAxis. )
+            // {
+            //   sb.Append( "\t" );
+            // }
+            sb.Append( axesCurrent[ key ].ToString() );
+            sb.Append( "\n" );
+        }
+        sb.Append( "\n" );
+
+        sb.Append( "Buttons:\n" );
+        foreach ( GamepadButton key in buttonsCurrent.Keys )
+        {
+            sb.Append( key.ToString() );
+            sb.Append( ": \t" );
+            // if ( key != GamepadButton. && key != GamepadButton. )
+            // {
+            //   sb.Append( "\t" );
+            // }
+            sb.Append( buttonsCurrent[ key ].ToString() );
+            sb.Append( "\n" );
+
+            sb.AppendLine( key.ToString() + ": \t\t" + buttonsCurrent[ key ].ToString() );
+        }
+        sb.AppendLine( "" );
+
+        return sb.ToString();
+    }
+}
