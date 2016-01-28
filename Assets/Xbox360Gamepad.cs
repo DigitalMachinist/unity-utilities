@@ -19,8 +19,8 @@ public enum GamepadButton : byte
     Y,
     Back,
     Start,
-    LAnalogBtn,
-    RAnalogBtn,
+    LAnalog,
+    RAnalog,
     LBumper,
     RBumper
 };
@@ -38,21 +38,23 @@ public enum GamepadAxis : byte
     LAnalogY,
     RAnalogX,
     RAnalogY,
-    TriggerR,
-    TriggerL
+    RTrigger,
+    LTrigger
 }
 
 
 /// <summary>
-/// 
+///
 /// </summary>
-public class AxisEvent : UnityEvent<float> { }
+//[Serializable]
+//public class AxisEvent : FoldableEvent<UnityEvent<float>, float> { }
 
 
 /// <summary>
-/// 
+///
 /// </summary>
-public class ButtonEvent : UnityEvent<bool> { }
+[Serializable]
+public class ButtonEvent : FoldableEvent<UnityEvent<bool>, bool> { }
 
 
 /// <summary>
@@ -89,16 +91,44 @@ public class Xbox360Gamepad : MonoBehaviour
     private Dictionary<GamepadButton, string> buttonsToUnityInputMap { get; set; }
 
     [Header( "A Button" )]
-    ButtonEvent AButtonDown;
-    ButtonEvent BButtonDown;
-    ButtonEvent XButtonDown;
-    ButtonEvent YButtonDown;
-    ButtonEvent BackButtonDown;
-    ButtonEvent StartButtonDown;
-    ButtonEvent LAnalogButtonDown;
-    ButtonEvent LBumperButtonDown;
-    ButtonEvent RAnalogButtonDown;
-    ButtonEvent RBumperButtonDown;
+    public ButtonEvent ButtonDownA;
+    public ButtonEvent ButtonUpA;
+
+    [Header( "B Button" )]
+    public ButtonEvent ButtonDownB;
+    public ButtonEvent ButtonUpB;
+
+    [Header( "X Button" )]
+    public ButtonEvent ButtonDownX;
+    public ButtonEvent ButtonUpX;
+
+    [Header( "Y Button" )]
+    public ButtonEvent ButtonDownY;
+    public ButtonEvent ButtonUpY;
+
+    [Header( "Back Button" )]
+    public ButtonEvent ButtonDownBack;
+    public ButtonEvent ButtonUpBack;
+
+    [Header( "Start Button" )]
+    public ButtonEvent ButtonDownStart;
+    public ButtonEvent ButtonUpStart;
+
+    [Header( "Left Analog Button" )]
+    public ButtonEvent ButtonDownLAnalog;
+    public ButtonEvent ButtonUpLAnalog;
+
+    [Header( "Left Bumper" )]
+    public ButtonEvent ButtonDownLBumper;
+    public ButtonEvent ButtonUpLBumper;
+
+    [Header( "Right Analog Button" )]
+    public ButtonEvent ButtonDownRAnalog;
+    public ButtonEvent ButtonUpRAnalog;
+
+    [Header( "Right Bumper" )]
+    public ButtonEvent ButtonDownRBumper;
+    public ButtonEvent ButtonUpRBumper;
 
     #endregion
 
@@ -117,8 +147,8 @@ public class Xbox360Gamepad : MonoBehaviour
                 { GamepadAxis.LAnalogY, 0f },
                 { GamepadAxis.RAnalogX, 0f },
                 { GamepadAxis.RAnalogY, 0f },
-                { GamepadAxis.TriggerL, 0f },
-                { GamepadAxis.TriggerR, 0f }
+                { GamepadAxis.LTrigger, 0f },
+                { GamepadAxis.RTrigger, 0f }
             };
             axesPrevious = new Dictionary<GamepadAxis, float>()
             {
@@ -128,8 +158,8 @@ public class Xbox360Gamepad : MonoBehaviour
                 { GamepadAxis.LAnalogY, 0f },
                 { GamepadAxis.RAnalogX, 0f },
                 { GamepadAxis.RAnalogY, 0f },
-                { GamepadAxis.TriggerL, 0f },
-                { GamepadAxis.TriggerR, 0f }
+                { GamepadAxis.LTrigger, 0f },
+                { GamepadAxis.RTrigger, 0f }
             };
         }
 
@@ -140,9 +170,9 @@ public class Xbox360Gamepad : MonoBehaviour
                 { GamepadButton.A, false },
                 { GamepadButton.B, false },
                 { GamepadButton.Back, false },
-                { GamepadButton.LAnalogBtn, false },
+                { GamepadButton.LAnalog, false },
                 { GamepadButton.LBumper, false },
-                { GamepadButton.RAnalogBtn, false },
+                { GamepadButton.RAnalog, false },
                 { GamepadButton.RBumper, false },
                 { GamepadButton.Start, false },
                 { GamepadButton.X, false },
@@ -153,9 +183,9 @@ public class Xbox360Gamepad : MonoBehaviour
                 { GamepadButton.A, false },
                 { GamepadButton.B, false },
                 { GamepadButton.Back, false },
-                { GamepadButton.LAnalogBtn, false },
+                { GamepadButton.LAnalog, false },
                 { GamepadButton.LBumper, false },
-                { GamepadButton.RAnalogBtn, false },
+                { GamepadButton.RAnalog, false },
                 { GamepadButton.RBumper, false },
                 { GamepadButton.Start, false },
                 { GamepadButton.X, false },
@@ -178,8 +208,8 @@ public class Xbox360Gamepad : MonoBehaviour
                 { GamepadAxis.LAnalogY, "L_YAxis_" + player },
                 { GamepadAxis.RAnalogX, "R_XAxis_" + player },
                 { GamepadAxis.RAnalogY, "R_YAxis_" + player },
-                { GamepadAxis.TriggerL, "TriggersR_" + player },
-                { GamepadAxis.TriggerR, "TriggersL_" + player }
+                { GamepadAxis.LTrigger, "TriggersR_" + player },
+                { GamepadAxis.RTrigger, "TriggersL_" + player }
             };
 
             // Map from internal button enum to Unity Input Manager joystick buttons.
@@ -188,9 +218,9 @@ public class Xbox360Gamepad : MonoBehaviour
                 { GamepadButton.A, "A_" + player },
                 { GamepadButton.B, "B_" + player },
                 { GamepadButton.Back, "X_" + player },
-                { GamepadButton.LAnalogBtn, "Y_" + player },
+                { GamepadButton.LAnalog, "Y_" + player },
                 { GamepadButton.LBumper, "Back_" + player },
-                { GamepadButton.RAnalogBtn, "Start_" + player },
+                { GamepadButton.RAnalog, "Start_" + player },
                 { GamepadButton.RBumper, "LS_" + player },
                 { GamepadButton.Start, "RS_" + player },
                 { GamepadButton.X, "LB_" + player },
@@ -201,11 +231,11 @@ public class Xbox360Gamepad : MonoBehaviour
 
     void Update()
     {
-        // Persist the current state as the previous state and sample the new current state out of 
+        // Persist the current state as the previous state and sample the new current state out of
         // the Unity Input Manager.
         {
-            // Note! 
-            // These are here to store copies of the maps' keys so that the maps can be modified 
+            // Note!
+            // These are here to store copies of the maps' keys so that the maps can be modified
             // inside the following foreach loops -- otherwise they would throw exceptions.
             var axesKeys = axesCurrent.Keys;
             foreach ( GamepadAxis key in axesKeys )
