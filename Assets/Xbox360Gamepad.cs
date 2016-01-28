@@ -89,42 +89,44 @@ public class Xbox360Gamepad : MonoBehaviour
     private Dictionary<GamepadButton, bool> buttonsCurrent { get; set; }
     private Dictionary<GamepadButton, bool> buttonsPrevious { get; set; }
     private Dictionary<GamepadButton, string> buttonsToUnityInputMap { get; set; }
+    private Dictionary<GamepadButton, ButtonEvent> buttonsToDownEventsMap { get; set; }
+    private Dictionary<GamepadButton, ButtonEvent> buttonsToUpEventsMap { get; set; }
 
     [Header( "A Button" )]
-    public ButtonEvent ButtonDownA;
-    public ButtonEvent ButtonUpA;
+    public UnityEvent ButtonDownA;
+    public UnityEvent ButtonUpA;
 
     [Header( "B Button" )]
-    public ButtonEvent ButtonDownB;
-    public ButtonEvent ButtonUpB;
+    public UnityEvent ButtonDownB;
+    public UnityEvent ButtonUpB;
 
     [Header( "X Button" )]
-    public ButtonEvent ButtonDownX;
-    public ButtonEvent ButtonUpX;
+    public UnityEvent ButtonDownX;
+    public UnityEvent ButtonUpX;
 
     [Header( "Y Button" )]
-    public ButtonEvent ButtonDownY;
-    public ButtonEvent ButtonUpY;
+    public UnityEvent ButtonDownY;
+    public UnityEvent ButtonUpY;
 
     [Header( "Back Button" )]
-    public ButtonEvent ButtonDownBack;
-    public ButtonEvent ButtonUpBack;
+    public UnityEvent ButtonDownBack;
+    public UnityEvent ButtonUpBack;
 
     [Header( "Start Button" )]
-    public ButtonEvent ButtonDownStart;
-    public ButtonEvent ButtonUpStart;
+    public UnityEvent ButtonDownStart;
+    public UnityEvent ButtonUpStart;
 
     [Header( "Left Analog Button" )]
-    public ButtonEvent ButtonDownLAnalog;
-    public ButtonEvent ButtonUpLAnalog;
+    public UnityEvent ButtonDownLAnalog;
+    public UnityEvent ButtonUpLAnalog;
 
     [Header( "Left Bumper" )]
-    public ButtonEvent ButtonDownLBumper;
-    public ButtonEvent ButtonUpLBumper;
+    public UnityEvent ButtonDownLBumper;
+    public UnityEvent ButtonUpLBumper;
 
     [Header( "Right Analog Button" )]
-    public ButtonEvent ButtonDownRAnalog;
-    public ButtonEvent ButtonUpRAnalog;
+    public UnityEvent ButtonDownRAnalog;
+    public UnityEvent ButtonUpRAnalog;
 
     [Header( "Right Bumper" )]
     public ButtonEvent ButtonDownRBumper;
@@ -227,41 +229,91 @@ public class Xbox360Gamepad : MonoBehaviour
                 { GamepadButton.Y, "RB_" + player }
             };
         }
+
+        //
+        buttonsToDownEventsMap = new Dictionary<GamepadButton, string>()
+        {
+            { GamepadButton.A, ButtonDownA },
+            { GamepadButton.B, ButtonDownB },
+            { GamepadButton.Back, ButtonDownBack },
+            { GamepadButton.LAnalog, ButtonDownLAnalog },
+            { GamepadButton.LBumper, ButtonDownLBumper },
+            { GamepadButton.RAnalog, ButtonDownRAnalog },
+            { GamepadButton.RBumper, ButtonDownRBumper },
+            { GamepadButton.Start, ButtonDownStart },
+            { GamepadButton.X, ButtonDownX },
+            { GamepadButton.Y, ButtonDownY }
+        }
+
+        //
+        buttonsToUpEventsMap = new Dictionary<GamepadButton, string>()
+        {
+            { GamepadButton.A, ButtonUpA },
+            { GamepadButton.B, ButtonUpB },
+            { GamepadButton.Back, ButtonUpBack },
+            { GamepadButton.LAnalog, ButtonUpLAnalog },
+            { GamepadButton.LBumper, ButtonUpLBumper },
+            { GamepadButton.RAnalog, ButtonUpRAnalog },
+            { GamepadButton.RBumper, ButtonUpRBumper },
+            { GamepadButton.Start, ButtonUpStart },
+            { GamepadButton.X, ButtonUpX },
+            { GamepadButton.Y, ButtonUpY }
+        }
     }
 
     void Update()
     {
-        // Persist the current state as the previous state and sample the new current state out of
-        // the Unity Input Manager.
+        if ( IsUpdating )
         {
-            // Note!
-            // These are here to store copies of the maps' keys so that the maps can be modified
-            // inside the following foreach loops -- otherwise they would throw exceptions.
-            var axesKeys = axesCurrent.Keys;
-            foreach ( GamepadAxis key in axesKeys )
+            // Persist the current state as the previous state and sample the new current state out of
+            // the Unity Input Manager.
             {
-                axesPrevious[ key ] = axesCurrent[ key ];
-                axesCurrent[ key ] = Input.GetAxis( axesToUnityInputMap[ key ] );
+                // Note!
+                // These are here to store copies of the maps' keys so that the maps can be modified
+                // inside the following foreach loops -- otherwise they would throw exceptions.
+                var axesKeys = axesCurrent.Keys;
+                foreach ( var key in axesKeys )
+                {
+                    axesPrevious[ key ] = axesCurrent[ key ];
+                    axesCurrent[ key ] = Input.GetAxis( axesToUnityInputMap[ key ] );
+                }
+                var buttonsKeys = buttonsCurrent.Keys;
+                foreach ( var key in buttonsKeys )
+                {
+                    buttonsPrevious[ key ] = buttonsCurrent[ key ];
+                    buttonsCurrent[ key ] = Input.GetButton( buttonsToUnityInputMap[ key ] );
+
+                    // Test for button state change events and emit them as they come up.
+                    if ( DidButtonPressBegin( key ) )
+                    {
+                        var downEvent = buttonsToDownEventsMap[ key ];
+                        downEvent.Invoke();
+                    }
+                    else if ( DidButtonPressEnd( key ) )
+                    {
+                        var upEvent = buttonsToUpEventsMap[ key ];
+                        upEvent.Invoke();
+                    }
+                }
             }
-            var buttonsKeys = axesCurrent.Keys;
-            foreach ( GamepadButton key in buttonsKeys )
-            {
-                buttonsPrevious[ key ] = buttonsCurrent[ key ];
-                buttonsCurrent[ key ] = Input.GetButton( buttonsToUnityInputMap[ key ] );
-            }
+        }
+
+        if ( IsDebugLogging )
+        {
+            Debug.Log( this );
         }
     }
 
     #endregion
 
-    #region ButtonDown / ButtonUp
+    #region Detection of start/end of button presses
 
-    public bool IsButtonDown( GamepadButton b )
+    public bool DidButtonPressBegin( GamepadButton b )
     {
         return ( buttonsCurrent[ b ] && !buttonsPrevious[ b ] );
     }
 
-    public bool IsButtonUp( GamepadButton b )
+    public bool DidButtonPressEnd( GamepadButton b )
     {
         return ( !buttonsCurrent[ b ] && buttonsPrevious[ b ] ) ;
     }
