@@ -10,51 +10,37 @@ using UnityEngine.Events;
 /// <summary>
 /// An enumeration of button signals that are emitted from the Xbox 360 Gamepad.
 /// </summary>
-public enum GamepadButton : byte
+public enum Xbox360GamepadButton : byte
 {
-    NONE = 0,
     A,
     B,
     X,
     Y,
-    Back,
-    Start,
+    LTrigger,
+    RTrigger,
+    LBumper,
+    RBumper,
     LAnalog,
     RAnalog,
-    LBumper,
-    RBumper
+    Back,
+    Start
 };
 
 
 /// <summary>
 /// An enumeration of control axes that are measured by the Xbox 360 Gamepad.
 /// </summary>
-public enum GamepadAxis : byte
+public enum Xbox360GamepadAxis : byte
 {
-    NONE = 0,
-    DPadX,
-    DPadY,
     LAnalogX,
     LAnalogY,
     RAnalogX,
     RAnalogY,
+    LTrigger,
     RTrigger,
-    LTrigger
+    DPadX,
+    DPadY
 }
-
-
-/// <summary>
-///
-/// </summary>
-//[Serializable]
-//public class AxisEvent : FoldableEvent<UnityEvent<float>, float> { }
-
-
-/// <summary>
-///
-/// </summary>
-[Serializable]
-public class ButtonEvent : FoldableEvent<UnityEvent<bool>, bool> { }
 
 
 /// <summary>
@@ -77,60 +63,82 @@ public class Xbox360Gamepad : MonoBehaviour
 {
     #region Fields / Properties
 
-    [Header( "Configuration" )]
+    static float triggerThreshold = 0.2f;
+    public static float TriggerThreshold
+    {
+        get { return triggerThreshold; }
+        set
+        {
+            if ( value < 0f || value > 1f )
+            {
+                throw new ArgumentOutOfRangeException( "value", "Value must belong to the range [0f, 1f]!" );
+            }
+            triggerThreshold = value;
+        }
+    }
+
+    [ Header( "Configuration" )]
     public int PlayerNum = 1;
     public bool IsUpdating = true;
     public bool IsDebugLogging = false;
 
-    private Dictionary<GamepadAxis, float> axesCurrent { get; set; }
-    private Dictionary<GamepadAxis, float> axesPrevious { get; set; }
-    private Dictionary<GamepadAxis, string> axesToUnityInputMap { get; set; }
+    Dictionary<Xbox360GamepadAxis, float> axesCurrent { get; set; }
+    Dictionary<Xbox360GamepadAxis, float> axesPrevious { get; set; }
+    Dictionary<Xbox360GamepadAxis, string> axesToUnityInputMap { get; set; }
 
-    private Dictionary<GamepadButton, bool> buttonsCurrent { get; set; }
-    private Dictionary<GamepadButton, bool> buttonsPrevious { get; set; }
-    private Dictionary<GamepadButton, string> buttonsToUnityInputMap { get; set; }
-    private Dictionary<GamepadButton, ButtonEvent> buttonsToDownEventsMap { get; set; }
-    private Dictionary<GamepadButton, ButtonEvent> buttonsToUpEventsMap { get; set; }
+    Dictionary<Xbox360GamepadButton, bool> buttonsCurrent { get; set; }
+    Dictionary<Xbox360GamepadButton, bool> buttonsPrevious { get; set; }
+    Dictionary<Xbox360GamepadButton, string> buttonsToUnityInputMap { get; set; }
+    Dictionary<Xbox360GamepadButton, FoldableEvent> buttonsToDownEventsMap { get; set; }
+    Dictionary<Xbox360GamepadButton, FoldableEvent> buttonsToUpEventsMap { get; set; }
 
     [Header( "A Button" )]
-    public UnityEvent ButtonDownA;
-    public UnityEvent ButtonUpA;
+    public FoldableEvent ButtonDownA;
+    public FoldableEvent ButtonUpA;
 
     [Header( "B Button" )]
-    public UnityEvent ButtonDownB;
-    public UnityEvent ButtonUpB;
+    public FoldableEvent ButtonDownB;
+    public FoldableEvent ButtonUpB;
 
     [Header( "X Button" )]
-    public UnityEvent ButtonDownX;
-    public UnityEvent ButtonUpX;
+    public FoldableEvent ButtonDownX;
+    public FoldableEvent ButtonUpX;
 
     [Header( "Y Button" )]
-    public UnityEvent ButtonDownY;
-    public UnityEvent ButtonUpY;
+    public FoldableEvent ButtonDownY;
+    public FoldableEvent ButtonUpY;
 
-    [Header( "Back Button" )]
-    public UnityEvent ButtonDownBack;
-    public UnityEvent ButtonUpBack;
+    [Header( "Left Trigger" )]
+    public FoldableEvent ButtonDownLTrigger;
+    public FoldableEvent ButtonUpLTrigger;
 
-    [Header( "Start Button" )]
-    public UnityEvent ButtonDownStart;
-    public UnityEvent ButtonUpStart;
-
-    [Header( "Left Analog Button" )]
-    public UnityEvent ButtonDownLAnalog;
-    public UnityEvent ButtonUpLAnalog;
+    [Header( "Right Trigger" )]
+    public FoldableEvent ButtonDownRTrigger;
+    public FoldableEvent ButtonUpRTrigger;
 
     [Header( "Left Bumper" )]
-    public UnityEvent ButtonDownLBumper;
-    public UnityEvent ButtonUpLBumper;
-
-    [Header( "Right Analog Button" )]
-    public UnityEvent ButtonDownRAnalog;
-    public UnityEvent ButtonUpRAnalog;
+    public FoldableEvent ButtonDownLBumper;
+    public FoldableEvent ButtonUpLBumper;
 
     [Header( "Right Bumper" )]
-    public ButtonEvent ButtonDownRBumper;
-    public ButtonEvent ButtonUpRBumper;
+    public FoldableEvent ButtonDownRBumper;
+    public FoldableEvent ButtonUpRBumper;
+
+    [Header( "Left Analog Button" )]
+    public FoldableEvent ButtonDownLAnalog;
+    public FoldableEvent ButtonUpLAnalog;
+
+    [Header( "Right Analog Button" )]
+    public FoldableEvent ButtonDownRAnalog;
+    public FoldableEvent ButtonUpRAnalog;
+
+    [Header( "Back Button" )]
+    public FoldableEvent ButtonDownBack;
+    public FoldableEvent ButtonUpBack;
+
+    [Header( "Start Button" )]
+    public FoldableEvent ButtonDownStart;
+    public FoldableEvent ButtonUpStart;
 
     #endregion
 
@@ -141,57 +149,61 @@ public class Xbox360Gamepad : MonoBehaviour
     {
         // Current and previous states of each control axis.
         {
-            axesCurrent = new Dictionary<GamepadAxis, float>()
+            axesCurrent = new Dictionary<Xbox360GamepadAxis, float>()
             {
-                { GamepadAxis.DPadX, 0f },
-                { GamepadAxis.DPadY, 0f },
-                { GamepadAxis.LAnalogX, 0f },
-                { GamepadAxis.LAnalogY, 0f },
-                { GamepadAxis.RAnalogX, 0f },
-                { GamepadAxis.RAnalogY, 0f },
-                { GamepadAxis.LTrigger, 0f },
-                { GamepadAxis.RTrigger, 0f }
+                { Xbox360GamepadAxis.DPadX, 0f },
+                { Xbox360GamepadAxis.DPadY, 0f },
+                { Xbox360GamepadAxis.LAnalogX, 0f },
+                { Xbox360GamepadAxis.LAnalogY, 0f },
+                { Xbox360GamepadAxis.RAnalogX, 0f },
+                { Xbox360GamepadAxis.RAnalogY, 0f },
+                { Xbox360GamepadAxis.LTrigger, 0f },
+                { Xbox360GamepadAxis.RTrigger, 0f }
             };
-            axesPrevious = new Dictionary<GamepadAxis, float>()
+            axesPrevious = new Dictionary<Xbox360GamepadAxis, float>()
             {
-                { GamepadAxis.DPadX, 0f },
-                { GamepadAxis.DPadY, 0f },
-                { GamepadAxis.LAnalogX, 0f },
-                { GamepadAxis.LAnalogY, 0f },
-                { GamepadAxis.RAnalogX, 0f },
-                { GamepadAxis.RAnalogY, 0f },
-                { GamepadAxis.LTrigger, 0f },
-                { GamepadAxis.RTrigger, 0f }
+                { Xbox360GamepadAxis.DPadX, 0f },
+                { Xbox360GamepadAxis.DPadY, 0f },
+                { Xbox360GamepadAxis.LAnalogX, 0f },
+                { Xbox360GamepadAxis.LAnalogY, 0f },
+                { Xbox360GamepadAxis.RAnalogX, 0f },
+                { Xbox360GamepadAxis.RAnalogY, 0f },
+                { Xbox360GamepadAxis.LTrigger, 0f },
+                { Xbox360GamepadAxis.RTrigger, 0f }
             };
         }
 
         // Current and previous states of each button.
         {
-            buttonsCurrent = new Dictionary<GamepadButton, bool>()
+            buttonsCurrent = new Dictionary<Xbox360GamepadButton, bool>()
             {
-                { GamepadButton.A, false },
-                { GamepadButton.B, false },
-                { GamepadButton.Back, false },
-                { GamepadButton.LAnalog, false },
-                { GamepadButton.LBumper, false },
-                { GamepadButton.RAnalog, false },
-                { GamepadButton.RBumper, false },
-                { GamepadButton.Start, false },
-                { GamepadButton.X, false },
-                { GamepadButton.Y, false }
+                { Xbox360GamepadButton.A, false },
+                { Xbox360GamepadButton.B, false },
+                { Xbox360GamepadButton.X, false },
+                { Xbox360GamepadButton.Y, false },
+                { Xbox360GamepadButton.LTrigger, false },
+                { Xbox360GamepadButton.RTrigger, false },
+                { Xbox360GamepadButton.LBumper, false },
+                { Xbox360GamepadButton.RBumper, false },
+                { Xbox360GamepadButton.LAnalog, false },
+                { Xbox360GamepadButton.RAnalog, false },
+                { Xbox360GamepadButton.Back, false },
+                { Xbox360GamepadButton.Start, false }
             };
-            buttonsPrevious = new Dictionary<GamepadButton, bool>()
+            buttonsPrevious = new Dictionary<Xbox360GamepadButton, bool>()
             {
-                { GamepadButton.A, false },
-                { GamepadButton.B, false },
-                { GamepadButton.Back, false },
-                { GamepadButton.LAnalog, false },
-                { GamepadButton.LBumper, false },
-                { GamepadButton.RAnalog, false },
-                { GamepadButton.RBumper, false },
-                { GamepadButton.Start, false },
-                { GamepadButton.X, false },
-                { GamepadButton.Y, false }
+                { Xbox360GamepadButton.A, false },
+                { Xbox360GamepadButton.B, false },
+                { Xbox360GamepadButton.X, false },
+                { Xbox360GamepadButton.Y, false },
+                { Xbox360GamepadButton.LTrigger, false },
+                { Xbox360GamepadButton.RTrigger, false },
+                { Xbox360GamepadButton.LBumper, false },
+                { Xbox360GamepadButton.RBumper, false },
+                { Xbox360GamepadButton.LAnalog, false },
+                { Xbox360GamepadButton.RAnalog, false },
+                { Xbox360GamepadButton.Back, false },
+                { Xbox360GamepadButton.Start, false },
             };
         }
 
@@ -202,62 +214,68 @@ public class Xbox360Gamepad : MonoBehaviour
             var player = PlayerNum.ToString();
 
             // Map from internal axis enum to Unity Input Manager joystick axes.
-            axesToUnityInputMap = new Dictionary<GamepadAxis, string>()
+            axesToUnityInputMap = new Dictionary<Xbox360GamepadAxis, string>()
             {
-                { GamepadAxis.DPadX, "DPad_XAxis_" + player },
-                { GamepadAxis.DPadY, "DPad_YAxis_" + player },
-                { GamepadAxis.LAnalogX, "L_XAxis_" + player },
-                { GamepadAxis.LAnalogY, "L_YAxis_" + player },
-                { GamepadAxis.RAnalogX, "R_XAxis_" + player },
-                { GamepadAxis.RAnalogY, "R_YAxis_" + player },
-                { GamepadAxis.LTrigger, "TriggersR_" + player },
-                { GamepadAxis.RTrigger, "TriggersL_" + player }
+                { Xbox360GamepadAxis.LAnalogX, "L_XAxis_" + player },
+                { Xbox360GamepadAxis.LAnalogY, "L_YAxis_" + player },
+                { Xbox360GamepadAxis.RAnalogX, "R_XAxis_" + player },
+                { Xbox360GamepadAxis.RAnalogY, "R_YAxis_" + player },
+                { Xbox360GamepadAxis.LTrigger, "TriggersL_" + player },
+                { Xbox360GamepadAxis.RTrigger, "TriggersR_" + player },
+                { Xbox360GamepadAxis.DPadX, "DPad_XAxis_" + player },
+                { Xbox360GamepadAxis.DPadY, "DPad_YAxis_" + player }
             };
 
             // Map from internal button enum to Unity Input Manager joystick buttons.
-            buttonsToUnityInputMap = new Dictionary<GamepadButton, string>()
+            buttonsToUnityInputMap = new Dictionary<Xbox360GamepadButton, string>()
             {
-                { GamepadButton.A, "A_" + player },
-                { GamepadButton.B, "B_" + player },
-                { GamepadButton.Back, "X_" + player },
-                { GamepadButton.LAnalog, "Y_" + player },
-                { GamepadButton.LBumper, "Back_" + player },
-                { GamepadButton.RAnalog, "Start_" + player },
-                { GamepadButton.RBumper, "LS_" + player },
-                { GamepadButton.Start, "RS_" + player },
-                { GamepadButton.X, "LB_" + player },
-                { GamepadButton.Y, "RB_" + player }
+                { Xbox360GamepadButton.A, "A_" + player },
+                { Xbox360GamepadButton.B, "B_" + player },
+                { Xbox360GamepadButton.X, "X_" + player },
+                { Xbox360GamepadButton.Y, "Y_" + player },
+                { Xbox360GamepadButton.LTrigger, "TriggersL_" + player },
+                { Xbox360GamepadButton.RTrigger, "TriggersR_" + player },
+                { Xbox360GamepadButton.LBumper, "LB_" + player },
+                { Xbox360GamepadButton.RBumper, "RB_" + player },
+                { Xbox360GamepadButton.LAnalog, "LS_" + player },
+                { Xbox360GamepadButton.RAnalog, "RS_" + player },
+                { Xbox360GamepadButton.Back, "Back_" + player },
+                { Xbox360GamepadButton.Start, "Start_" + player }
             };
         }
 
-        //
-        buttonsToDownEventsMap = new Dictionary<GamepadButton, string>()
+        // Map controller buttons to button down and button up events to be invoked.
         {
-            { GamepadButton.A, ButtonDownA },
-            { GamepadButton.B, ButtonDownB },
-            { GamepadButton.Back, ButtonDownBack },
-            { GamepadButton.LAnalog, ButtonDownLAnalog },
-            { GamepadButton.LBumper, ButtonDownLBumper },
-            { GamepadButton.RAnalog, ButtonDownRAnalog },
-            { GamepadButton.RBumper, ButtonDownRBumper },
-            { GamepadButton.Start, ButtonDownStart },
-            { GamepadButton.X, ButtonDownX },
-            { GamepadButton.Y, ButtonDownY }
-        }
-
-        //
-        buttonsToUpEventsMap = new Dictionary<GamepadButton, string>()
-        {
-            { GamepadButton.A, ButtonUpA },
-            { GamepadButton.B, ButtonUpB },
-            { GamepadButton.Back, ButtonUpBack },
-            { GamepadButton.LAnalog, ButtonUpLAnalog },
-            { GamepadButton.LBumper, ButtonUpLBumper },
-            { GamepadButton.RAnalog, ButtonUpRAnalog },
-            { GamepadButton.RBumper, ButtonUpRBumper },
-            { GamepadButton.Start, ButtonUpStart },
-            { GamepadButton.X, ButtonUpX },
-            { GamepadButton.Y, ButtonUpY }
+            buttonsToDownEventsMap = new Dictionary<Xbox360GamepadButton, FoldableEvent>()
+            {
+                { Xbox360GamepadButton.A, ButtonDownA },
+                { Xbox360GamepadButton.B, ButtonDownB },
+                { Xbox360GamepadButton.X, ButtonDownX },
+                { Xbox360GamepadButton.Y, ButtonDownY },
+                { Xbox360GamepadButton.LTrigger, ButtonDownLTrigger },
+                { Xbox360GamepadButton.RTrigger, ButtonDownRTrigger },
+                { Xbox360GamepadButton.LBumper, ButtonDownLBumper },
+                { Xbox360GamepadButton.RBumper, ButtonDownRBumper },
+                { Xbox360GamepadButton.LAnalog, ButtonDownLAnalog },
+                { Xbox360GamepadButton.RAnalog, ButtonDownRAnalog },
+                { Xbox360GamepadButton.Back, ButtonDownBack },
+                { Xbox360GamepadButton.Start, ButtonDownStart }
+            };
+            buttonsToUpEventsMap = new Dictionary<Xbox360GamepadButton, FoldableEvent>()
+            {
+                { Xbox360GamepadButton.A, ButtonUpA },
+                { Xbox360GamepadButton.B, ButtonUpB },
+                { Xbox360GamepadButton.X, ButtonUpX },
+                { Xbox360GamepadButton.Y, ButtonUpY },
+                { Xbox360GamepadButton.LTrigger, ButtonUpLTrigger },
+                { Xbox360GamepadButton.RTrigger, ButtonUpRTrigger },
+                { Xbox360GamepadButton.LBumper, ButtonUpLBumper },
+                { Xbox360GamepadButton.RBumper, ButtonUpRBumper },
+                { Xbox360GamepadButton.LAnalog, ButtonUpLAnalog },
+                { Xbox360GamepadButton.RAnalog, ButtonUpRAnalog },
+                { Xbox360GamepadButton.Back, ButtonUpBack },
+                { Xbox360GamepadButton.Start, ButtonUpStart },
+            };
         }
     }
 
@@ -271,28 +289,43 @@ public class Xbox360Gamepad : MonoBehaviour
                 // Note!
                 // These are here to store copies of the maps' keys so that the maps can be modified
                 // inside the following foreach loops -- otherwise they would throw exceptions.
-                var axesKeys = axesCurrent.Keys;
+                var axesKeys = axesCurrent.Keys.ToArray();
+                var buttonsKeys = buttonsCurrent.Keys.ToArray();
+
+                // Read in the new axis states.
                 foreach ( var key in axesKeys )
                 {
                     axesPrevious[ key ] = axesCurrent[ key ];
                     axesCurrent[ key ] = Input.GetAxis( axesToUnityInputMap[ key ] );
                 }
-                var buttonsKeys = buttonsCurrent.Keys;
+
+                // Read in the new button states (and translate the triggers into button states).
                 foreach ( var key in buttonsKeys )
                 {
                     buttonsPrevious[ key ] = buttonsCurrent[ key ];
-                    buttonsCurrent[ key ] = Input.GetButton( buttonsToUnityInputMap[ key ] );
+                    if ( key == Xbox360GamepadButton.LTrigger || key == Xbox360GamepadButton.RTrigger )
+                    {
+                        // Trigger pathway: Read the axis state and translate into a button value.
+                        var axisValue = Input.GetAxis( buttonsToUnityInputMap[ key ] );
+                        buttonsCurrent[ key ] = ( axisValue >= TriggerThreshold );
+                    }
+                    else
+                    {
+                        // Default pathway: Read the button state directly.
+                        var buttonValue = Input.GetButton( buttonsToUnityInputMap[ key ] );
+                        buttonsCurrent[ key ] = buttonValue;
+                    }
 
                     // Test for button state change events and emit them as they come up.
                     if ( DidButtonPressBegin( key ) )
                     {
                         var downEvent = buttonsToDownEventsMap[ key ];
-                        downEvent.Invoke();
+                        downEvent.Event.Invoke();
                     }
                     else if ( DidButtonPressEnd( key ) )
                     {
                         var upEvent = buttonsToUpEventsMap[ key ];
-                        upEvent.Invoke();
+                        upEvent.Event.Invoke();
                     }
                 }
             }
@@ -306,14 +339,25 @@ public class Xbox360Gamepad : MonoBehaviour
 
     #endregion
 
+
     #region Detection of start/end of button presses
 
-    public bool DidButtonPressBegin( GamepadButton b )
+    public float Axis( Xbox360GamepadAxis key )
+    {
+        return axesCurrent[ key ];
+    }
+
+    public bool Button( Xbox360GamepadButton key )
+    {
+        return buttonsCurrent[ key ];
+    }
+
+    public bool DidButtonPressBegin( Xbox360GamepadButton b )
     {
         return ( buttonsCurrent[ b ] && !buttonsPrevious[ b ] );
     }
 
-    public bool DidButtonPressEnd( GamepadButton b )
+    public bool DidButtonPressEnd( Xbox360GamepadButton b )
     {
         return ( !buttonsCurrent[ b ] && buttonsPrevious[ b ] ) ;
     }
@@ -329,7 +373,7 @@ public class Xbox360Gamepad : MonoBehaviour
     /// <returns>
     ///   true if the axis is past the threshold and previously was not, otherwise false.
     /// </returns>
-    public bool AxisJustPastThreshold( GamepadAxis Axis, float Threshold )
+    public bool AxisJustPastThreshold( Xbox360GamepadAxis Axis, float Threshold )
     {
         float threshold = Mathf.Clamp( Threshold, -1f, 1f );
 
@@ -358,32 +402,30 @@ public class Xbox360Gamepad : MonoBehaviour
         sb.Append( "\n\n" );
 
         sb.AppendLine( "Axes:\n" );
-        foreach ( GamepadAxis key in axesCurrent.Keys )
+        foreach ( Xbox360GamepadAxis key in axesCurrent.Keys )
         {
             sb.Append( key.ToString() );
-            sb.Append( ": \t" );
-            // if ( key != GamepadAxis. )
-            // {
-            //   sb.Append( "\t" );
-            // }
+            sb.Append( ": " );
+            if ( key != Xbox360GamepadAxis.RAnalogX )
+            {
+                sb.Append( "\t" );
+            }
             sb.Append( axesCurrent[ key ].ToString() );
             sb.Append( "\n" );
         }
         sb.Append( "\n" );
 
         sb.Append( "Buttons:\n" );
-        foreach ( GamepadButton key in buttonsCurrent.Keys )
+        foreach ( Xbox360GamepadButton key in buttonsCurrent.Keys )
         {
             sb.Append( key.ToString() );
             sb.Append( ": \t" );
-            // if ( key != GamepadButton. && key != GamepadButton. )
-            // {
-            //   sb.Append( "\t" );
-            // }
+            //if ( key != GamepadButton. && key != GamepadButton. )
+            //{
+            //    sb.Append( "\t" );
+            //}
             sb.Append( buttonsCurrent[ key ].ToString() );
             sb.Append( "\n" );
-
-            sb.AppendLine( key.ToString() + ": \t\t" + buttonsCurrent[ key ].ToString() );
         }
         sb.AppendLine( "" );
 
