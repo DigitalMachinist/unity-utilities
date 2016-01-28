@@ -1,10 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using UnityEngine.Events;
 
 
 /// <summary>
@@ -91,6 +89,10 @@ public class Xbox360Gamepad : MonoBehaviour
     Dictionary<Xbox360GamepadButton, string> buttonsToUnityInputMap { get; set; }
     Dictionary<Xbox360GamepadButton, FoldableEvent> buttonsToDownEventsMap { get; set; }
     Dictionary<Xbox360GamepadButton, FoldableEvent> buttonsToUpEventsMap { get; set; }
+
+    [Header( "Events" )]
+    public FoldableEvent Connected;
+    public FoldableEvent Disconnected;
 
     [Header( "A Button" )]
     public FoldableEvent ButtonDownA;
