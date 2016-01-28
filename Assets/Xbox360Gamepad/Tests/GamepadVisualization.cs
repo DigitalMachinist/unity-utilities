@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using UnityEngine.UI;
 
 public class GamepadVisualization : MonoBehaviour
 {
@@ -35,8 +35,14 @@ public class GamepadVisualization : MonoBehaviour
     public JoystickVisualization RAnalogJoystick;
     public JoystickVisualization DPadJoystick;
 
+    [Header( "UI" )]
+    public Text TextPlayerNum;
+
     void Start ()
     {
+        // Set the player number of the visualization based on the Gamepad.
+        TextPlayerNum.text = "Player " + Gamepad.PlayerNum;
+
         // Initialize axes' gamepad source.
         LAnalogXAxis.Gamepad = Gamepad;
         LAnalogYAxis.Gamepad = Gamepad;

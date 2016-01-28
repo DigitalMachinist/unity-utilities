@@ -19,7 +19,7 @@ public class ButtonVisualization : MonoBehaviour
 	void Update()
     {
         material.color = 
-            Gamepad.Button( Button )
+            Gamepad.GetButton( Button )
                 ? PressedColor
                 : IdleColor;
     }

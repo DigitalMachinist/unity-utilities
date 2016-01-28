@@ -17,7 +17,7 @@ public class AxisVisualization : MonoBehaviour
 
 	void Update()
     {
-        var fraction = ( Gamepad.Axis( Axis ) - MinValue ) / ( MaxValue - MinValue );
+        var fraction = ( Gamepad.GetAxis( Axis ) - MinValue ) / ( MaxValue - MinValue );
         var halfScale = ( 0.5f * ScaleLength );
         var position = dial.transform.localPosition;
         position.x = Mathf.Lerp( -halfScale, halfScale, fraction );

@@ -22,8 +22,8 @@ public class JoystickVisualization : MonoBehaviour
 
     void Update()
     {
-        var xFraction = ( ( Gamepad.Axis( XAxis ) + 1f ) / 2f );
-        var yFraction = ( ( Gamepad.Axis( YAxis ) + 1f ) / 2f );
+        var xFraction = ( ( Gamepad.GetAxis( XAxis ) + 1f ) / 2f );
+        var yFraction = ( ( Gamepad.GetAxis( YAxis ) + 1f ) / 2f );
         var halfScale = ( 0.5f * ScaleLength );
 
         // Apply axis inversion.
