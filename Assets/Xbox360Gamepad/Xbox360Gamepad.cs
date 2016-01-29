@@ -167,11 +167,13 @@ public class Xbox360Gamepad : MonoBehaviour
             { Xbox360GamepadAxis.LTrigger, state => state.Triggers.Left },
             { Xbox360GamepadAxis.RTrigger, state => state.Triggers.Right },
             { Xbox360GamepadAxis.DPadX, state => {
+                // Transform DPad left and right button bools into a floating point axis.
                 if ( state.DPad.Left == ButtonState.Pressed )               return -1f;
                 else if ( stateCurrent.DPad.Right == ButtonState.Pressed )  return  1f;
                 else                                                        return  0f;
             } },
             { Xbox360GamepadAxis.DPadY, state => {
+                // Transform DPad down and up button bools into a floating point axis.
                 if ( state.DPad.Down == ButtonState.Pressed )               return -1f;
                 else if ( stateCurrent.DPad.Up == ButtonState.Pressed )     return  1f;
                 else                                                        return  0f;
@@ -185,8 +187,14 @@ public class Xbox360Gamepad : MonoBehaviour
             { Xbox360GamepadButton.B, state => state.Buttons.B == ButtonState.Pressed },
             { Xbox360GamepadButton.X, state => state.Buttons.X == ButtonState.Pressed },
             { Xbox360GamepadButton.Y, state => state.Buttons.Y == ButtonState.Pressed },
-            { Xbox360GamepadButton.LTrigger, state => state.Triggers.Left >= TriggerThreshold },
-            { Xbox360GamepadButton.RTrigger, state => state.Triggers.Right >= TriggerThreshold },
+            { Xbox360GamepadButton.LTrigger, state => {
+                // Transform left trigger floating point axis into a bool.
+                return state.Triggers.Left >= TriggerThreshold; 
+            } },
+            { Xbox360GamepadButton.RTrigger, state => {
+                // Transform right trigger floating point axis into a bool.
+                return state.Triggers.Right >= TriggerThreshold; 
+            } },
             { Xbox360GamepadButton.LBumper, state => state.Buttons.LeftShoulder == ButtonState.Pressed },
             { Xbox360GamepadButton.RBumper, state => state.Buttons.RightShoulder == ButtonState.Pressed },
             { Xbox360GamepadButton.LAnalog, state => state.Buttons.LeftStick == ButtonState.Pressed },

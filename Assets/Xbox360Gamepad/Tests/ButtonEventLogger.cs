@@ -10,30 +10,40 @@ public class ButtonEventLogger : MonoBehaviour
     {
         Gamepad.Connected.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + " connected!" ) );
         Gamepad.Disconnected.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + " disconnected!" ) );
-        Gamepad.AButton.Pressed.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": A button pressed!" ) );
-        Gamepad.AButton.Released.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": A button released!" ) );
-        Gamepad.BButton.Pressed.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": B button pressed!" ) );
-        Gamepad.BButton.Released.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": B button released!" ) );
-        Gamepad.XButton.Pressed.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": X button pressed!" ) );
-        Gamepad.XButton.Released.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": X button released!" ) );
-        Gamepad.YButton.Pressed.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": Y button pressed!" ) );
-        Gamepad.YButton.Released.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": Y button released!" ) );
-        Gamepad.LeftTrigger.Pressed.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": left trigger pressed!" ) );
-        Gamepad.LeftTrigger.Released.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": left trigger released!" ) );
-        Gamepad.RightTrigger.Pressed.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": right trigger pressed!" ) );
-        Gamepad.RightTrigger.Released.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": right trigger released!" ) );
-        Gamepad.LeftBumper.Pressed.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": left bumper pressed!" ) );
-        Gamepad.LeftBumper.Released.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": left bumper released!" ) );
-        Gamepad.RightBumper.Pressed.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": right bumper pressed!" ) );
-        Gamepad.RightBumper.Released.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": right bumper released!" ) );
-        Gamepad.LeftAnalogButton.Pressed.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": left stick button pressed!" ) );
-        Gamepad.LeftAnalogButton.Released.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": left stick button released!" ) );
-        Gamepad.RightAnalogButton.Pressed.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": right stick button pressed!" ) );
-        Gamepad.RightAnalogButton.Released.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": right stick button released!" ) );
-        Gamepad.BackButton.Pressed.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": back button pressed!" ) );
-        Gamepad.BackButton.Released.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": back button released!" ) );
-        Gamepad.StartButton.Pressed.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": start button pressed!" ) );
-        Gamepad.StartButton.Released.AddListener( () => Log( "Gamepad " + Gamepad.PlayerNum + ": start button released!" ) );
+        Gamepad.AButton.Pressed.AddListener( () => LogPressed( "A" ) );
+        Gamepad.AButton.Released.AddListener( () => LogReleased( "A" ) );
+        Gamepad.BButton.Pressed.AddListener( () => LogPressed( "B" ) );
+        Gamepad.BButton.Released.AddListener( () => LogReleased( "B" ) );
+        Gamepad.XButton.Pressed.AddListener( () => LogPressed( "X" ) );
+        Gamepad.XButton.Released.AddListener( () => LogReleased( "X" ) );
+        Gamepad.YButton.Pressed.AddListener( () => LogPressed( "Y" ) );
+        Gamepad.YButton.Released.AddListener( () => LogReleased( "Y" ) );
+        Gamepad.LeftTrigger.Pressed.AddListener( () => LogPressed( "left" ) );
+        Gamepad.LeftTrigger.Released.AddListener( () => LogReleased( "left" ) );
+        Gamepad.RightTrigger.Pressed.AddListener( () => LogPressed( "right" ) );
+        Gamepad.RightTrigger.Released.AddListener( () => LogReleased( "right" ) );
+        Gamepad.LeftBumper.Pressed.AddListener( () => LogPressed( "left" ) );
+        Gamepad.LeftBumper.Released.AddListener( () => LogReleased( "left" ) );
+        Gamepad.RightBumper.Pressed.AddListener( () => LogPressed( "right" ) );
+        Gamepad.RightBumper.Released.AddListener( () => LogReleased( "right" ) );
+        Gamepad.LeftAnalogButton.Pressed.AddListener( () => LogPressed( "left stick" ) );
+        Gamepad.LeftAnalogButton.Released.AddListener( () => LogReleased( "left stick" ) );
+        Gamepad.RightAnalogButton.Pressed.AddListener( () => LogPressed( "right stick" ) );
+        Gamepad.RightAnalogButton.Released.AddListener( () => LogReleased( "right stick" ) );
+        Gamepad.BackButton.Pressed.AddListener( () => LogPressed( "back" ) );
+        Gamepad.BackButton.Released.AddListener( () => LogReleased( "back" ) );
+        Gamepad.StartButton.Pressed.AddListener( () => LogPressed( "start" ) );
+        Gamepad.StartButton.Released.AddListener( () => LogReleased( "start" ) );
+    }
+
+    void LogPressed( string buttonName )
+    {
+        Log( "Gamepad " + Gamepad.PlayerNum + ": " + buttonName + " button pessed!" );
+    }
+
+    void LogReleased( string buttonName )
+    {
+        Log( "Gamepad " + Gamepad.PlayerNum + ": " + buttonName + " button released!" );
     }
 
     void Log( string message )
