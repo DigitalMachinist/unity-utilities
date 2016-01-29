@@ -37,6 +37,11 @@ public class GamepadVisualization : MonoBehaviour
 
     [Header( "UI" )]
     public Text TextPlayerNum;
+    public Text LTriggerValueText;
+    public Text RTriggerValueText;
+    public Text LAnalogValueText;
+    public Text RAnalogValueText;
+    public Text DPadValueText;
 
     void Start ()
     {
@@ -71,5 +76,15 @@ public class GamepadVisualization : MonoBehaviour
         LAnalogJoystick.Gamepad = Gamepad;
         RAnalogJoystick.Gamepad = Gamepad;
         DPadJoystick.Gamepad = Gamepad;
+    }
+
+    void Update()
+    {
+        // Continually update the UI with the values of the axes.
+        LTriggerValueText.text = Gamepad.GetAxis( Xbox360GamepadAxis.LTrigger ).ToString( "F1" );
+        RTriggerValueText.text = Gamepad.GetAxis( Xbox360GamepadAxis.RTrigger ).ToString( "F1" );
+        LAnalogValueText.text = "( " + Gamepad.GetAxis( Xbox360GamepadAxis.LAnalogX ).ToString( "F1" ) + ", " + Gamepad.GetAxis( Xbox360GamepadAxis.LAnalogY ).ToString( "F1" ) + " )";
+        RAnalogValueText.text = "( " + Gamepad.GetAxis( Xbox360GamepadAxis.RAnalogX ).ToString( "F1" ) + ", " + Gamepad.GetAxis( Xbox360GamepadAxis.RAnalogY ).ToString( "F1" ) + " )";
+        DPadValueText.text = "( " + Gamepad.GetAxis( Xbox360GamepadAxis.DPadX ).ToString( "F1" ) + ", " + Gamepad.GetAxis( Xbox360GamepadAxis.DPadY ).ToString( "F1" ) + " )";
     }
 }

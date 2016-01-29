@@ -60,8 +60,8 @@ public enum Xbox360GamepadAxis : byte
 ///</remarks>
 public class Xbox360Gamepad : MonoBehaviour
 {
-    #region Fields / Properties
-
+    #region Static Members
+    
     static float triggerThreshold = 0.2f;
     public static float TriggerThreshold
     {
@@ -76,43 +76,17 @@ public class Xbox360Gamepad : MonoBehaviour
         }
     }
 
+    #endregion
+
+
+    #region Fields / Properties
+
     [ Header( "Configuration" )]
     public int PlayerNum = 1;
     public bool IsUpdating = true;
     public bool IsDebugLogging = false;
-
-    GamePadState stateCurrent;
-    GamePadState statePrevious;
-
-    //Dictionary<Xbox360GamepadAxis, float> axesCurrent { get; set; }
-    //Dictionary<Xbox360GamepadAxis, float> axesPrevious { get; set; }
-    //Dictionary<Xbox360GamepadAxis, string> axesToUnityInputMap { get; set; }
-
-    //Dictionary<Xbox360GamepadButton, bool> buttonsCurrent { get; set; }
-    //Dictionary<Xbox360GamepadButton, bool> buttonsPrevious { get; set; }
-    //Dictionary<Xbox360GamepadButton, string> buttonsToUnityInputMap { get; set; }
-
-    Dictionary<Xbox360GamepadAxis, Func<GamePadState, float>> axesToFuncsMap { get; set; }
-    Dictionary<Xbox360GamepadButton, Func<GamePadState, bool>> buttonsToFuncsMap { get; set; }
-    Dictionary<Xbox360GamepadButton, FoldableEvent> buttonsToDownEventsMap { get; set; }
-    Dictionary<Xbox360GamepadButton, FoldableEvent> buttonsToUpEventsMap { get; set; }
-
-    public bool IsConnected
-    {
-        get { return stateCurrent.IsConnected; }
-    }
-
-    public PlayerIndex PlayerIndex
-    {
-        get { return (PlayerIndex)( PlayerNum - 1 ); }
-    }
-
-    public bool WasConnected
-    {
-        get { return statePrevious.IsConnected; }
-    }
-
-    [Header( "Events" )]
+    
+    [Header( "Connection" )]
     public FoldableEvent Connected;
     public FoldableEvent Disconnected;
 
@@ -164,13 +138,51 @@ public class Xbox360Gamepad : MonoBehaviour
     public FoldableEvent ButtonDownStart;
     public FoldableEvent ButtonUpStart;
 
+    Dictionary<Xbox360GamepadAxis, Func<GamePadState, float>> axesToFuncsMap;
+    Dictionary<Xbox360GamepadButton, Func<GamePadState, bool>> buttonsToFuncsMap;
+    Dictionary<Xbox360GamepadButton, FoldableEvent> buttonsToDownEventsMap;
+    Dictionary<Xbox360GamepadButton, FoldableEvent> buttonsToUpEventsMap;
+    GamePadState stateCurrent;
+    GamePadState statePrevious;
+
+    public bool IsConnected
+    {
+        get { return stateCurrent.IsConnected; }
+    }
+
+    public PlayerIndex PlayerIndex
+    {
+        get { return (PlayerIndex)( PlayerNum - 1 ); }
+    }
+
+    public bool WasConnected
+    {
+        get { return statePrevious.IsConnected; }
+    }
+
     #endregion
 
 
-    #region Unity Message Handlers
+    #region Event & Message Handlers
 
     void Start()
     {
+        // When the controller starts up, fire a connected event right away (if it's actually connected).
+        if ( IsConnected )
+        {
+            Connected.Invoke();
+        }
+
+        // Make sure button presses end if the controller disconnects.
+        Disconnected.AddListener( EndAllButtonPresses );
+    }
+
+    void Awake()
+    {
+        // Initialize the state variables.
+        statePrevious = GamePad.GetState( PlayerIndex );
+        stateCurrent = GamePad.GetState( PlayerIndex );
+
         // Map from internal axes enum to functions that return values from the given state.
         axesToFuncsMap = new Dictionary<Xbox360GamepadAxis, Func<GamePadState, float>>()
         {
@@ -256,22 +268,22 @@ public class Xbox360Gamepad : MonoBehaviour
             {
                 if ( DidButtonPressBegin( key ) )
                 {
-                    buttonsToDownEventsMap[ key ].Event.Invoke();
+                    buttonsToDownEventsMap[ key ].Invoke();
                 }
                 else if ( DidButtonPressEnd( key ) )
                 {
-                    buttonsToUpEventsMap[ key ].Event.Invoke();
+                    buttonsToUpEventsMap[ key ].Invoke();
                 }
             }
 
             // Detect donnection and disconnection events.
             if ( DidConnectionBegin() )
             {
-                Connected.Event.Invoke();
+                Connected.Invoke();
             }
             else if ( DidConnectionEnd() )
             {
-                Disconnected.Event.Invoke();
+                Disconnected.Invoke();
             }
         }
 
@@ -331,12 +343,29 @@ public class Xbox360Gamepad : MonoBehaviour
         return stateCurrent;
     }
 
+    public GamePadState GetStatePrevious()
+    {
+        return statePrevious;
+    }
+
     public void SetVibration( float leftMotor, float rightMotor )
     {
         GamePad.SetVibration( PlayerIndex, leftMotor, rightMotor );
     }
 
     #endregion
+
+
+    void EndAllButtonPresses()
+    {
+        foreach ( var key in buttonsToUpEventsMap.Keys )
+        {
+            if ( GetButton( key ) )
+            {
+                buttonsToUpEventsMap[ key ].Invoke();
+            }
+        }
+    }
 
 
     public override string ToString()
@@ -366,10 +395,6 @@ public class Xbox360Gamepad : MonoBehaviour
         {
             sb.Append( key.ToString() );
             sb.Append( ": \t" );
-            //if ( key != GamepadButton. && key != GamepadButton. )
-            //{
-            //    sb.Append( "\t" );
-            //}
             sb.Append( GetButton( key ).ToString() );
             sb.Append( "\n" );
         }
