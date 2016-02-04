@@ -2,12 +2,6 @@
 using UnityEngine.Events;
 
 
-/// <summary>
-/// Not only does this fold up nicely in the Inspector, but it retains the arguments with which 
-/// it was invoked so that any subscriber who joins after invocation will be immediately executed 
-/// with the same arguments/context as the invocation when it happened. This is great for ready 
-/// signals and declarations of dependency -- notifications that need to only happen once.
-/// </summary>
 [Serializable]
 public class FoldablePromise : FoldableEvent
 {
@@ -23,13 +17,13 @@ public class FoldablePromise : FoldableEvent
         if ( !isResolved )
         {
             isResolved = true;
-            Event.Invoke();
+            unityEvent.Invoke();
         }
     }
 
     public override void AddListener( UnityAction action )
     {
-        Event.AddListener( action );
+        unityEvent.AddListener( action );
         if ( isResolved )
         {
             action();
@@ -38,12 +32,6 @@ public class FoldablePromise : FoldableEvent
 }
 
 
-/// <summary>
-/// Not only does this fold up nicely in the Inspector, but it retains the arguments with which 
-/// it was invoked so that any subscriber who joins after invocation will be immediately executed 
-/// with the same arguments/context as the invocation when it happened. This is great for ready 
-/// signals and declarations of dependency -- notifications that need to only happen once.
-/// </summary>
 [Serializable]
 public class FoldablePromise<TEvent, TArg0> 
     : FoldableEvent<TEvent, TArg0>
@@ -63,13 +51,13 @@ public class FoldablePromise<TEvent, TArg0>
         {
             isResolved = true;
             this.arg0 = arg0;
-            Event.Invoke( arg0 );
+            unityEvent.Invoke( arg0 );
         }
     }
 
     public override void AddListener( UnityAction<TArg0> action )
     {
-        Event.AddListener( action );
+        unityEvent.AddListener( action );
         if ( isResolved )
         {
             action( arg0 );
@@ -78,12 +66,6 @@ public class FoldablePromise<TEvent, TArg0>
 }
 
 
-/// <summary>
-/// Not only does this fold up nicely in the Inspector, but it retains the arguments with which 
-/// it was invoked so that any subscriber who joins after invocation will be immediately executed 
-/// with the same arguments/context as the invocation when it happened. This is great for ready 
-/// signals and declarations of dependency -- notifications that need to only happen once.
-/// </summary>
 [Serializable]
 public class FoldablePromise<TEvent, TArg0, TArg1> 
     : FoldableEvent<TEvent, TArg0, TArg1>
@@ -105,13 +87,13 @@ public class FoldablePromise<TEvent, TArg0, TArg1>
             isResolved = true;
             this.arg0 = arg0;
             this.arg1 = arg1;
-            Event.Invoke( arg0, arg1 );
+            unityEvent.Invoke( arg0, arg1 );
         }
     }
 
     public override void AddListener( UnityAction<TArg0, TArg1> action )
     {
-        Event.AddListener( action );
+        unityEvent.AddListener( action );
         if ( isResolved )
         {
             action( arg0, arg1 );
@@ -120,12 +102,6 @@ public class FoldablePromise<TEvent, TArg0, TArg1>
 }
 
 
-/// <summary>
-/// Not only does this fold up nicely in the Inspector, but it retains the arguments with which 
-/// it was invoked so that any subscriber who joins after invocation will be immediately executed 
-/// with the same arguments/context as the invocation when it happened. This is great for ready 
-/// signals and declarations of dependency -- notifications that need to only happen once.
-/// </summary>
 [Serializable]
 public class FoldablePromise<TEvent, TArg0, TArg1, TArg2> 
     : FoldableEvent<TEvent, TArg0, TArg1, TArg2>
@@ -149,13 +125,13 @@ public class FoldablePromise<TEvent, TArg0, TArg1, TArg2>
             this.arg0 = arg0;
             this.arg1 = arg1;
             this.arg2 = arg2;
-            Event.Invoke( arg0, arg1, arg2 );
+            unityEvent.Invoke( arg0, arg1, arg2 );
         }
     }
 
     public override void AddListener( UnityAction<TArg0, TArg1, TArg2> action )
     {
-        Event.AddListener( action );
+        unityEvent.AddListener( action );
         if ( isResolved )
         {
             action( arg0, arg1, arg2 );
@@ -164,12 +140,6 @@ public class FoldablePromise<TEvent, TArg0, TArg1, TArg2>
 }
 
 
-/// <summary>
-/// Not only does this fold up nicely in the Inspector, but it retains the arguments with which 
-/// it was invoked so that any subscriber who joins after invocation will be immediately executed 
-/// with the same arguments/context as the invocation when it happened. This is great for ready 
-/// signals and declarations of dependency -- notifications that need to only happen once.
-/// </summary>
 [Serializable]
 public class FoldablePromise<TEvent, TArg0, TArg1, TArg2, TArg3> 
     : FoldableEvent<TEvent, TArg0, TArg1, TArg2, TArg3>
@@ -195,13 +165,13 @@ public class FoldablePromise<TEvent, TArg0, TArg1, TArg2, TArg3>
             this.arg1 = arg1;
             this.arg2 = arg2;
             this.arg3 = arg3;
-            Event.Invoke( arg0, arg1, arg2, arg3 );
+            unityEvent.Invoke( arg0, arg1, arg2, arg3 );
         }
     }
 
     public override void AddListener( UnityAction<TArg0, TArg1, TArg2, TArg3> action )
     {
-        Event.AddListener( action );
+        unityEvent.AddListener( action );
         if ( isResolved )
         {
             action( arg0, arg1, arg2, arg3 );
