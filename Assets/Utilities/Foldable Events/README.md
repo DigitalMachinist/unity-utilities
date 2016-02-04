@@ -20,7 +20,7 @@ A derived class from ```FoldableEvent``` that, once invoked, will automatically 
 
 ## Usage
 
-For situations where the ```UnityEvent``` that you need is the standard, non-generic ```UnityEvent``` that passes no arguments to its subscribers, simply use ```FoldableEvent``` or ```FoldablePromise``` instead of UnityEvent.
+For situations where the ```UnityEvent``` that you need is the standard, non-generic ```UnityEvent``` that passes no arguments to its subscribers, simply use ```FoldableEvent``` or ```FoldablePromise``` instead of ```UnityEvent```.
 
 ```csharp
 public class FoldableEventTest : MonoBehaviour
@@ -30,9 +30,9 @@ public class FoldableEventTest : MonoBehaviour
 }
 ```
 
-In cases where you need the power of generics to pass arguments to event subscribers, you'll need to define a couple of types outside of your MonoBehaviour derived class to get the Unity Inspector to co-operate.
+In cases where you need the power of generics to pass arguments to event subscribers, you'll need to define a couple of types outside of your ```MonoBehaviour``` derived class to get the Unity Inspector to co-operate.
 
-If you have used generic ```UnityEvent```s before this should come as no surprise, since this is always a necessary step when using ```UnityEvent<T>``` inyour code such that it also appears in the Inspector.
+If you have used generic ```UnityEvent```s before this should come as no surprise, since this is always a necessary step when using ```UnityEvent<T>``` in your code such that it also appears in the Inspector.
 
 For example, this is how can use ```UnityEvent<int>``` in your code and allow it to appear in the Inspector:
 
@@ -67,4 +67,4 @@ public class FoldableEventTest : MonoBehaviour
 }
 ```
 
-Yeah, it's a little bit of a hassle (thanks Unity!), but it's worth your time!
+Yeah, it's a little bit of a hassle (thanks Unity!), but it's worth your time. The power of events in the Inspector is huge. Technical and non-technical people alike can suddenly accomplish a lot with little effort by making good use of these features!
