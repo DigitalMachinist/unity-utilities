@@ -20,6 +20,8 @@ A derived class from ```FoldableEvent``` that, once invoked, will automatically 
 
 Promises allow you to easily signal the readiness of resources and chain together dependencies such that they always load in the correct order and you can clearly see what depends on what without a lot of effort. This technique comes from my time working is JS as a webdev guy, and it's been tremendously helpful when applied to situations where previously script ordering was all I could do to sort things out.
 
+**Note:** *If you are passing objects that are modified by other processes in your scene to your ```UnityPromise``` event invocation, ```UnityPromise``` makes no guarantee that future subscribers that get called will receive these objects in the same state as when the invocation happened. Persisting the state of arbitrary objects for this purpose is outside the scope of the problem I'm trying to solve here. Sorry!*
+
 ## Usage
 
 For situations where the ```UnityEvent``` that you need is the standard, non-generic ```UnityEvent``` that passes no arguments to its subscribers, simply use ```FoldableEvent``` or ```FoldablePromise``` instead of ```UnityEvent```.

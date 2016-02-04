@@ -94,32 +94,20 @@ public struct ButtonEvents
 ///</remarks>
 public class Xbox360Gamepad : MonoBehaviour
 {
-    #region Static Members
-    
-    static float pressedThreshold = 0.2f;
-    public static float PressedThreshold
-    {
-        get { return pressedThreshold; }
-        set
-        {
-            if ( value < 0f || value > 1f )
-            {
-                throw new ArgumentOutOfRangeException( "value", "Value must belong to the range [0f, 1f]!" );
-            }
-            pressedThreshold = value;
-        }
-    }
-
-    #endregion
-
-
     #region Fields / Properties
 
     [ Header( "Configuration" )]
+    [Range( 1, 4 )]
     public int PlayerNum = 1;
+    [Range( 0f, 1f )]
+    public float TriggerPressedThreshold = 0.2f;
+    [Range( 0f, 1f )]
+    public float LeftAnalogPressedThreshold = 0.2f;
+    [Range( 0f, 1f )]
+    public float RightAnalogPressedThreshold = 0.2f;
     public bool IsUpdating = true;
     public bool IsDebugLogging = false;
-    
+
     [Header( "Events" )]
     public FoldableEvent Connected;
     public FoldableEvent Disconnected;
@@ -294,43 +282,43 @@ public class Xbox360Gamepad : MonoBehaviour
             { Xbox360GamepadButton.Y, state => state.Buttons.Y == ButtonState.Pressed },
             { Xbox360GamepadButton.LTrigger, state => {
                 // Transform left trigger floating point axis into a bool.
-                return state.Triggers.Left >= PressedThreshold; 
+                return state.Triggers.Left >= TriggerPressedThreshold; 
             } },
             { Xbox360GamepadButton.RTrigger, state => {
                 // Transform right trigger floating point axis into a bool.
-                return state.Triggers.Right >= PressedThreshold; 
+                return state.Triggers.Right >= TriggerPressedThreshold; 
             } },
             { Xbox360GamepadButton.LAnalogLeft, state => {
                 // Transform left analog stick x-axis floating point axis into a bool.
-                return state.ThumbSticks.Left.X <= -PressedThreshold;
+                return state.ThumbSticks.Left.X <= -LeftAnalogPressedThreshold;
             } },
             { Xbox360GamepadButton.LAnalogRight, state => {
                 // Transform left analog stick x-axis floating point axis into a bool.
-                return state.ThumbSticks.Left.X >= PressedThreshold;
+                return state.ThumbSticks.Left.X >= LeftAnalogPressedThreshold;
             } },
             { Xbox360GamepadButton.LAnalogDown, state => {
                 // Transform left analog stick y-axis floating point axis into a bool.
-                return state.ThumbSticks.Left.Y <= -PressedThreshold;
+                return state.ThumbSticks.Left.Y <= -LeftAnalogPressedThreshold;
             } },
             { Xbox360GamepadButton.LAnalogUp, state => {
                 // Transform left analog stick y-axis floating point axis into a bool.
-                return state.ThumbSticks.Left.Y >= PressedThreshold;
+                return state.ThumbSticks.Left.Y >= LeftAnalogPressedThreshold;
             } },
             { Xbox360GamepadButton.RAnalogLeft, state => {
                 // Transform right analog stick x-axis floating point axis into a bool.
-                return state.ThumbSticks.Right.X <= -PressedThreshold;
+                return state.ThumbSticks.Right.X <= -RightAnalogPressedThreshold;
             } },
             { Xbox360GamepadButton.RAnalogRight, state => {
                 // Transform right analog stick x-axis floating point axis into a bool.
-                return state.ThumbSticks.Right.X >= PressedThreshold;
+                return state.ThumbSticks.Right.X >= RightAnalogPressedThreshold;
             } },
             { Xbox360GamepadButton.RAnalogDown, state => {
                 // Transform right analog stick y-axis floating point axis into a bool.
-                return state.ThumbSticks.Right.Y <= -PressedThreshold;
+                return state.ThumbSticks.Right.Y <= -RightAnalogPressedThreshold;
             } },
             { Xbox360GamepadButton.RAnalogUp, state => {
                 // Transform right analog stick y-axis floating point axis into a bool.
-                return state.ThumbSticks.Right.Y >= PressedThreshold;
+                return state.ThumbSticks.Right.Y >= RightAnalogPressedThreshold;
             } },
             { Xbox360GamepadButton.DPadLeft, state => state.DPad.Left == ButtonState.Pressed },
             { Xbox360GamepadButton.DPadRight, state => state.DPad.Right == ButtonState.Pressed },
