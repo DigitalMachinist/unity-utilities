@@ -45,7 +45,9 @@ public class FoldablePromise : FoldableEvent
 /// signals and declarations of dependency -- notifications that need to only happen once.
 /// </summary>
 [Serializable]
-public class FoldablePromise<TArg0> : FoldableEvent<TArg0>
+public class FoldablePromise<TEvent, TArg0> 
+    : FoldableEvent<TEvent, TArg0>
+    where TEvent : UnityEvent<TArg0>
 {
     bool isResolved = false;
     TArg0 arg0;
@@ -83,7 +85,9 @@ public class FoldablePromise<TArg0> : FoldableEvent<TArg0>
 /// signals and declarations of dependency -- notifications that need to only happen once.
 /// </summary>
 [Serializable]
-public class FoldablePromise<TArg0, TArg1> : FoldableEvent<TArg0, TArg1>
+public class FoldablePromise<TEvent, TArg0, TArg1> 
+    : FoldableEvent<TEvent, TArg0, TArg1>
+    where TEvent : UnityEvent<TArg0, TArg1>
 {
     bool isResolved = false;
     TArg0 arg0;
@@ -123,7 +127,9 @@ public class FoldablePromise<TArg0, TArg1> : FoldableEvent<TArg0, TArg1>
 /// signals and declarations of dependency -- notifications that need to only happen once.
 /// </summary>
 [Serializable]
-public class FoldablePromise<TArg0, TArg1, TArg2> : FoldableEvent<TArg0, TArg1, TArg2>
+public class FoldablePromise<TEvent, TArg0, TArg1, TArg2> 
+    : FoldableEvent<TEvent, TArg0, TArg1, TArg2>
+    where TEvent : UnityEvent<TArg0, TArg1, TArg2>
 {
     bool isResolved = false;
     TArg0 arg0;
@@ -165,7 +171,9 @@ public class FoldablePromise<TArg0, TArg1, TArg2> : FoldableEvent<TArg0, TArg1, 
 /// signals and declarations of dependency -- notifications that need to only happen once.
 /// </summary>
 [Serializable]
-public class FoldablePromise<TArg0, TArg1, TArg2, TArg3> : FoldableEvent<TArg0, TArg1, TArg2, TArg3>
+public class FoldablePromise<TEvent, TArg0, TArg1, TArg2, TArg3> 
+    : FoldableEvent<TEvent, TArg0, TArg1, TArg2, TArg3>
+    where TEvent : UnityEvent<TArg0, TArg1, TArg2, TArg3>
 {
     bool isResolved = false;
     TArg0 arg0;
@@ -186,6 +194,7 @@ public class FoldablePromise<TArg0, TArg1, TArg2, TArg3> : FoldableEvent<TArg0, 
             this.arg0 = arg0;
             this.arg1 = arg1;
             this.arg2 = arg2;
+            this.arg3 = arg3;
             Event.Invoke( arg0, arg1, arg2, arg3 );
         }
     }

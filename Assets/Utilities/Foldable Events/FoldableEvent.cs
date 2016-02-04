@@ -29,15 +29,17 @@ public class FoldableEvent
 }
 
 
+
 /// <summary>
 /// The idea behind this is to make FoldableEvent contain a UnityEvent that is public, so 
 /// FoldableEvent will show up in the Inspector as serializable, but it will appear in the 
 /// Inspector as the default toggle dropdown -- and this takes up a lot less space!
 /// </summary>
 [Serializable]
-public class FoldableEvent<TArg0>
+public class FoldableEvent<TEvent, TArg0> 
+    where TEvent : UnityEvent<TArg0>
 {
-    public UnityEvent<TArg0> Event;
+    public TEvent Event;
 
     public virtual void Invoke( TArg0 arg0 )
     {
@@ -62,9 +64,10 @@ public class FoldableEvent<TArg0>
 /// Inspector as the default toggle dropdown -- and this takes up a lot less space!
 /// </summary>
 [Serializable]
-public class FoldableEvent<TArg0, TArg1>
+public class FoldableEvent<TEvent, TArg0, TArg1> 
+    where TEvent : UnityEvent<TArg0, TArg1>
 {
-    public UnityEvent<TArg0, TArg1> Event;
+    public TEvent Event;
 
     public virtual void Invoke( TArg0 arg0, TArg1 arg1 )
     {
@@ -89,9 +92,10 @@ public class FoldableEvent<TArg0, TArg1>
 /// Inspector as the default toggle dropdown -- and this takes up a lot less space!
 /// </summary>
 [Serializable]
-public class FoldableEvent<TArg0, TArg1, TArg2>
+public class FoldableEvent<TEvent, TArg0, TArg1, TArg2> 
+    where TEvent : UnityEvent<TArg0, TArg1, TArg2>
 {
-    public UnityEvent<TArg0, TArg1, TArg2> Event;
+    public TEvent Event;
 
     public virtual void Invoke( TArg0 arg0, TArg1 arg1, TArg2 arg2 )
     {
@@ -116,9 +120,10 @@ public class FoldableEvent<TArg0, TArg1, TArg2>
 /// Inspector as the default toggle dropdown -- and this takes up a lot less space!
 /// </summary>
 [Serializable]
-public class FoldableEvent<TArg0, TArg1, TArg2, TArg3>
+public class FoldableEvent<TEvent, TArg0, TArg1, TArg2, TArg3> 
+    where TEvent : UnityEvent<TArg0, TArg1, TArg2, TArg3>
 {
-    public UnityEvent<TArg0, TArg1, TArg2, TArg3> Event;
+    public TEvent Event;
 
     public virtual void Invoke( TArg0 arg0, TArg1 arg1, TArg2 arg2, TArg3 arg3 )
     {
