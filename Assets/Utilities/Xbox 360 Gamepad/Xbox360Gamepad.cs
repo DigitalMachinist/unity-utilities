@@ -7,26 +7,6 @@ using XInputDotNetPure;
 
 
 /// <summary>
-/// An enumeration of button signals that are emitted from the Xbox 360 Gamepad.
-/// </summary>
-public enum Xbox360GamepadButton : byte
-{
-    A,
-    B,
-    X,
-    Y,
-    LTrigger,
-    RTrigger,
-    LBumper,
-    RBumper,
-    LAnalog,
-    RAnalog,
-    Back,
-    Start
-};
-
-
-/// <summary>
 /// An enumeration of control axes that are measured by the Xbox 360 Gamepad.
 /// </summary>
 public enum Xbox360GamepadAxis : byte
@@ -39,6 +19,49 @@ public enum Xbox360GamepadAxis : byte
     RTrigger,
     DPadX,
     DPadY
+}
+
+
+/// <summary>
+/// An enumeration of button signals that are emitted from the Xbox 360 Gamepad.
+/// </summary>
+public enum Xbox360GamepadButton : byte
+{
+    A,
+    B,
+    X,
+    Y,
+    LTrigger,
+    RTrigger,
+    LBumper,
+    RBumper,
+    LAnalogButton,
+    LAnalogLeft,
+    LAnalogRight,
+    LAnalogUp,
+    LAnalogDown,
+    RAnalogButton,
+    RAnalogLeft,
+    RAnalogRight,
+    RAnalogUp,
+    RAnalogDown,
+    DPadLeft,
+    DPadRight,
+    DPadUp,
+    DPadDown,
+    Back,
+    Start
+};
+
+
+/// <summary>
+/// An enumeration of control axes that are measured by the Xbox 360 Gamepad.
+/// </summary>
+public enum Xbox360GamepadVector : byte
+{
+    LAnalog,
+    RAnalog,
+    DPad
 }
 
 
@@ -73,17 +96,17 @@ public class Xbox360Gamepad : MonoBehaviour
 {
     #region Static Members
     
-    static float triggerThreshold = 0.2f;
-    public static float TriggerThreshold
+    static float pressedThreshold = 0.2f;
+    public static float PressedThreshold
     {
-        get { return triggerThreshold; }
+        get { return pressedThreshold; }
         set
         {
             if ( value < 0f || value > 1f )
             {
                 throw new ArgumentOutOfRangeException( "value", "Value must belong to the range [0f, 1f]!" );
             }
-            triggerThreshold = value;
+            pressedThreshold = value;
         }
     }
 
@@ -104,18 +127,31 @@ public class Xbox360Gamepad : MonoBehaviour
     public ButtonEvents BButton;
     public ButtonEvents XButton;
     public ButtonEvents YButton;
-    public ButtonEvents LeftTrigger;
-    public ButtonEvents RightTrigger;
-    public ButtonEvents LeftBumper;
-    public ButtonEvents RightBumper;
+    public ButtonEvents LeftTriggerButton;
+    public ButtonEvents RightTriggerButton;
+    public ButtonEvents LeftBumperButton;
+    public ButtonEvents RightBumperButton;
     public ButtonEvents LeftAnalogButton;
+    public ButtonEvents LeftAnalogLeft;
+    public ButtonEvents LeftAnalogRight;
+    public ButtonEvents LeftAnalogUp;
+    public ButtonEvents LeftAnalogDown;
     public ButtonEvents RightAnalogButton;
+    public ButtonEvents RightAnalogLeft;
+    public ButtonEvents RightAnalogRight;
+    public ButtonEvents RightAnalogUp;
+    public ButtonEvents RightAnalogDown;
+    public ButtonEvents DPadLeft;
+    public ButtonEvents DPadRight;
+    public ButtonEvents DPadUp;
+    public ButtonEvents DPadDown;
     public ButtonEvents BackButton;
     public ButtonEvents StartButton;
 
     Dictionary<Xbox360GamepadAxis, Func<GamePadState, float>> axesToFuncsMap;
-    Dictionary<Xbox360GamepadButton, Func<GamePadState, bool>> buttonsToFuncsMap;
     Dictionary<Xbox360GamepadButton, ButtonEvents> buttonsToEventsMap;
+    Dictionary<Xbox360GamepadButton, Func<GamePadState, bool>> buttonsToFuncsMap;
+    Dictionary<Xbox360GamepadVector, Func<GamePadState, Vector2>> vectorsToFuncsMap;
     GamePadState stateCurrent;
     GamePadState statePrevious;
 
@@ -133,6 +169,75 @@ public class Xbox360Gamepad : MonoBehaviour
     {
         get { return statePrevious.IsConnected; }
     }
+
+    #region Control Getters
+
+    public bool A
+    {
+        get { return GetButton( Xbox360GamepadButton.A ); }
+    }
+
+    public bool B
+    {
+        get { return GetButton( Xbox360GamepadButton.B ); }
+    }
+
+    public bool X
+    {
+        get { return GetButton( Xbox360GamepadButton.X ); }
+    }
+
+    public bool Y
+    {
+        get { return GetButton( Xbox360GamepadButton.Y ); }
+    }
+
+    public bool LeftTrigger
+    {
+        get { return GetButton( Xbox360GamepadButton.LTrigger ); }
+    }
+
+    public bool RightTrigger
+    {
+        get { return GetButton( Xbox360GamepadButton.RTrigger ); }
+    }
+
+    public bool LeftBumper
+    {
+        get { return GetButton( Xbox360GamepadButton.LBumper ); }
+    }
+
+    public bool RightBumper
+    {
+        get { return GetButton( Xbox360GamepadButton.RBumper ); }
+    }
+
+    public Vector2 LeftAnalog
+    {
+        get { return GetVector( Xbox360GamepadVector.LAnalog ); }
+    }
+
+    public Vector2 RightAnalog
+    {
+        get { return GetVector( Xbox360GamepadVector.RAnalog ); }
+    }
+
+    public Vector2 DPad
+    {
+        get { return GetVector( Xbox360GamepadVector.DPad ); }
+    }
+
+    public bool BACK
+    {
+        get { return GetButton( Xbox360GamepadButton.Back ); }
+    }
+    
+    public bool START
+    {
+        get { return GetButton( Xbox360GamepadButton.Start ); }
+    }
+
+    #endregion
 
     #endregion
 
@@ -189,18 +294,80 @@ public class Xbox360Gamepad : MonoBehaviour
             { Xbox360GamepadButton.Y, state => state.Buttons.Y == ButtonState.Pressed },
             { Xbox360GamepadButton.LTrigger, state => {
                 // Transform left trigger floating point axis into a bool.
-                return state.Triggers.Left >= TriggerThreshold; 
+                return state.Triggers.Left >= PressedThreshold; 
             } },
             { Xbox360GamepadButton.RTrigger, state => {
                 // Transform right trigger floating point axis into a bool.
-                return state.Triggers.Right >= TriggerThreshold; 
+                return state.Triggers.Right >= PressedThreshold; 
             } },
+            { Xbox360GamepadButton.LAnalogLeft, state => {
+                // Transform left analog stick x-axis floating point axis into a bool.
+                return state.ThumbSticks.Left.X <= -PressedThreshold;
+            } },
+            { Xbox360GamepadButton.LAnalogRight, state => {
+                // Transform left analog stick x-axis floating point axis into a bool.
+                return state.ThumbSticks.Left.X >= PressedThreshold;
+            } },
+            { Xbox360GamepadButton.LAnalogDown, state => {
+                // Transform left analog stick y-axis floating point axis into a bool.
+                return state.ThumbSticks.Left.Y <= -PressedThreshold;
+            } },
+            { Xbox360GamepadButton.LAnalogUp, state => {
+                // Transform left analog stick y-axis floating point axis into a bool.
+                return state.ThumbSticks.Left.Y >= PressedThreshold;
+            } },
+            { Xbox360GamepadButton.RAnalogLeft, state => {
+                // Transform right analog stick x-axis floating point axis into a bool.
+                return state.ThumbSticks.Right.X <= -PressedThreshold;
+            } },
+            { Xbox360GamepadButton.RAnalogRight, state => {
+                // Transform right analog stick x-axis floating point axis into a bool.
+                return state.ThumbSticks.Right.X >= PressedThreshold;
+            } },
+            { Xbox360GamepadButton.RAnalogDown, state => {
+                // Transform right analog stick y-axis floating point axis into a bool.
+                return state.ThumbSticks.Right.Y <= -PressedThreshold;
+            } },
+            { Xbox360GamepadButton.RAnalogUp, state => {
+                // Transform right analog stick y-axis floating point axis into a bool.
+                return state.ThumbSticks.Right.Y >= PressedThreshold;
+            } },
+            { Xbox360GamepadButton.DPadLeft, state => state.DPad.Left == ButtonState.Pressed },
+            { Xbox360GamepadButton.DPadRight, state => state.DPad.Right == ButtonState.Pressed },
+            { Xbox360GamepadButton.DPadDown, state => state.DPad.Down == ButtonState.Pressed },
+            { Xbox360GamepadButton.DPadUp, state => state.DPad.Up == ButtonState.Pressed },
             { Xbox360GamepadButton.LBumper, state => state.Buttons.LeftShoulder == ButtonState.Pressed },
             { Xbox360GamepadButton.RBumper, state => state.Buttons.RightShoulder == ButtonState.Pressed },
-            { Xbox360GamepadButton.LAnalog, state => state.Buttons.LeftStick == ButtonState.Pressed },
-            { Xbox360GamepadButton.RAnalog, state => state.Buttons.RightStick == ButtonState.Pressed },
+            { Xbox360GamepadButton.LAnalogButton, state => state.Buttons.LeftStick == ButtonState.Pressed },
+            { Xbox360GamepadButton.RAnalogButton, state => state.Buttons.RightStick == ButtonState.Pressed },
             { Xbox360GamepadButton.Back, state => state.Buttons.Back == ButtonState.Pressed },
             { Xbox360GamepadButton.Start, state => state.Buttons.Start == ButtonState.Pressed }
+        };
+
+        // Map from internal vectors enum to functions that return values from the given state.
+        vectorsToFuncsMap = new Dictionary<Xbox360GamepadVector, Func<GamePadState, Vector2>>()
+        {
+            { Xbox360GamepadVector.LAnalog, state => {
+                // Get both the x and y axes of the left analog stick and form them into a 2D vector.
+                return new Vector2(
+                    axesToFuncsMap[ Xbox360GamepadAxis.LAnalogX ]( state ),
+                    axesToFuncsMap[ Xbox360GamepadAxis.LAnalogY ]( state )
+                );
+            } },
+            { Xbox360GamepadVector.RAnalog, state => {
+                // Get both the x and y axes of the right analog stick and form them into a 2D vector.
+                return new Vector2(
+                    axesToFuncsMap[ Xbox360GamepadAxis.RAnalogX ]( state ),
+                    axesToFuncsMap[ Xbox360GamepadAxis.RAnalogY ]( state )
+                );
+            } },
+            { Xbox360GamepadVector.DPad, state => {
+                // Get both the x and y axes of the directional pad and form them into a 2D vector.
+                return new Vector2( 
+                    axesToFuncsMap[ Xbox360GamepadAxis.DPadX ]( state ), 
+                    axesToFuncsMap[ Xbox360GamepadAxis.DPadY ]( state ) 
+                );
+            } }
         };
 
         // Map from internal buttons enum to button events to be invoked.
@@ -210,12 +377,24 @@ public class Xbox360Gamepad : MonoBehaviour
             { Xbox360GamepadButton.B, BButton },
             { Xbox360GamepadButton.X, XButton },
             { Xbox360GamepadButton.Y, YButton },
-            { Xbox360GamepadButton.LTrigger, LeftTrigger },
-            { Xbox360GamepadButton.RTrigger, RightTrigger },
-            { Xbox360GamepadButton.LBumper, LeftBumper },
-            { Xbox360GamepadButton.RBumper, RightBumper },
-            { Xbox360GamepadButton.LAnalog, LeftAnalogButton },
-            { Xbox360GamepadButton.RAnalog, RightAnalogButton },
+            { Xbox360GamepadButton.LTrigger, LeftTriggerButton },
+            { Xbox360GamepadButton.RTrigger, RightTriggerButton },
+            { Xbox360GamepadButton.LBumper, LeftBumperButton },
+            { Xbox360GamepadButton.RBumper, RightBumperButton },
+            { Xbox360GamepadButton.LAnalogButton, LeftAnalogButton },
+            { Xbox360GamepadButton.LAnalogLeft, LeftAnalogLeft },
+            { Xbox360GamepadButton.LAnalogRight, LeftAnalogRight },
+            { Xbox360GamepadButton.LAnalogUp, LeftAnalogUp },
+            { Xbox360GamepadButton.LAnalogDown, LeftAnalogDown },
+            { Xbox360GamepadButton.RAnalogButton, RightAnalogButton },
+            { Xbox360GamepadButton.RAnalogLeft, RightAnalogLeft },
+            { Xbox360GamepadButton.RAnalogRight, RightAnalogRight },
+            { Xbox360GamepadButton.RAnalogUp, RightAnalogUp },
+            { Xbox360GamepadButton.RAnalogDown, RightAnalogDown },
+            { Xbox360GamepadButton.DPadLeft, DPadLeft },
+            { Xbox360GamepadButton.DPadRight, DPadRight },
+            { Xbox360GamepadButton.DPadUp, DPadUp },
+            { Xbox360GamepadButton.DPadDown, DPadDown },
             { Xbox360GamepadButton.Back, BackButton },
             { Xbox360GamepadButton.Start, StartButton }
         };
@@ -313,6 +492,16 @@ public class Xbox360Gamepad : MonoBehaviour
     public GamePadState GetStatePrevious()
     {
         return statePrevious;
+    }
+
+    public Vector2 GetVector( Xbox360GamepadVector key )
+    {
+        return vectorsToFuncsMap[ key ]( stateCurrent );
+    }
+
+    public Vector2 GetVectorPrevious( Xbox360GamepadVector key )
+    {
+        return vectorsToFuncsMap[ key ]( statePrevious );
     }
 
     public void SetVibration( float leftMotor, float rightMotor )

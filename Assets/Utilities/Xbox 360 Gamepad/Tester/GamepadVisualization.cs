@@ -26,14 +26,26 @@ public class GamepadVisualization : MonoBehaviour
     public ButtonVisualization LBumperButton;
     public ButtonVisualization RBumperButton;
     public ButtonVisualization LAnalogButton;
+    public ButtonVisualization LAnalogLeft;
+    public ButtonVisualization LAnalogRight;
+    public ButtonVisualization LAnalogUp;
+    public ButtonVisualization LAnalogDown;
     public ButtonVisualization RAnalogButton;
+    public ButtonVisualization RAnalogLeft;
+    public ButtonVisualization RAnalogRight;
+    public ButtonVisualization RAnalogUp;
+    public ButtonVisualization RAnalogDown;
+    public ButtonVisualization DPadLeft;
+    public ButtonVisualization DPadRight;
+    public ButtonVisualization DPadUp;
+    public ButtonVisualization DPadDown;
     public ButtonVisualization BackButton;
     public ButtonVisualization StartButton;
 
-    [Header( "Joysticks" )]
-    public JoystickVisualization LAnalogJoystick;
-    public JoystickVisualization RAnalogJoystick;
-    public JoystickVisualization DPadJoystick;
+    [Header( "Vectors" )]
+    public VectorVisualization LAnalogVector;
+    public VectorVisualization RAnalogVector;
+    public VectorVisualization DPadVector;
 
     [Header( "UI" )]
     public Text TextPlayerNum;
@@ -73,9 +85,9 @@ public class GamepadVisualization : MonoBehaviour
         StartButton.Gamepad = Gamepad;
 
         // Initialize joysticks' gamepad source.
-        LAnalogJoystick.Gamepad = Gamepad;
-        RAnalogJoystick.Gamepad = Gamepad;
-        DPadJoystick.Gamepad = Gamepad;
+        LAnalogVector.Gamepad = Gamepad;
+        RAnalogVector.Gamepad = Gamepad;
+        DPadVector.Gamepad = Gamepad;
     }
 
     void Update()

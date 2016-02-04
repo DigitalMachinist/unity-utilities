@@ -1,10 +1,9 @@
 ﻿using UnityEngine;
 
-public class JoystickVisualization : MonoBehaviour
+public class VectorVisualization : MonoBehaviour
 {
     public Xbox360Gamepad Gamepad;
-    public Xbox360GamepadAxis XAxis;
-    public Xbox360GamepadAxis YAxis;
+    public Xbox360GamepadVector Vector;
     public float ScaleLength = 2f;
     public bool InvertXAxis = false;
     public bool InvertYAxis = false;
@@ -22,8 +21,9 @@ public class JoystickVisualization : MonoBehaviour
 
     void Update()
     {
-        var xFraction = ( ( Gamepad.GetAxis( XAxis ) + 1f ) / 2f );
-        var yFraction = ( ( Gamepad.GetAxis( YAxis ) + 1f ) / 2f );
+        var value = Gamepad.GetVector( Vector );
+        var xFraction = ( ( value.x + 1f ) / 2f );
+        var yFraction = ( ( value.y + 1f ) / 2f );
         var halfScale = ( 0.5f * ScaleLength );
 
         // Apply axis inversion.
