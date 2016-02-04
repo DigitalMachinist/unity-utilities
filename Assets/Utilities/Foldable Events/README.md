@@ -7,7 +7,7 @@ These helpers provide two helpful classes that make using ```UnityEvent```s soak
 
 Your inspector could look like this:
 
-![Nice clean events that don't scroll forever!](FoldableEventInspector.png)
+![Nice clean events that don't scroll forever!](https://raw.githubusercontent.com/DigitalMachinist/unity-utilities/master/Assets/Utilities/Foldable%20Events/FoldableEventInspector.PNG)
 
 
 ## FoldableEvent
