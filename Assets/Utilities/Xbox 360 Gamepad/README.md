@@ -7,7 +7,7 @@ This library contains a class that serves as a software interface for 1 to 4 Xbo
 
 ## Gamepad tester
 
-A gamepad tester scene is included with this library to both assist with debugging gamepad issues and to provide simple examples of usage so getting started with the interface isn't too difficult.
+A gamepad tester scene is included with this library to both assist with debugging gamepad issues and to provide simple examples of usage so getting started with the interface isn't too difficult. It provides visualizations of 1 to 4 gamepads and expresses all of the outputs that this interface provides, so that you can confirm that your gamepads are producing the output you expect.
 
 ![It looks just like this!](https://raw.githubusercontent.com/DigitalMachinist/unity-utilities/master/Assets/Utilities/Xbox%20360%20Gamepad/Xbox360Gamepad.png)
 
