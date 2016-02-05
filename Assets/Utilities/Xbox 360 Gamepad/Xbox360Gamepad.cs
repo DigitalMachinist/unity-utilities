@@ -142,6 +142,9 @@ public class Xbox360Gamepad : MonoBehaviour
     Dictionary<Xbox360GamepadVector, Func<GamePadState, Vector2>> vectorsToFuncsMap;
     GamePadState stateCurrent;
     GamePadState statePrevious;
+    float slowVibration;
+    float fastVibration;
+    bool didVibrationChange;
 
     public bool IsConnected
     {
@@ -249,6 +252,11 @@ public class Xbox360Gamepad : MonoBehaviour
         // Initialize the state variables.
         statePrevious = GamePad.GetState( PlayerIndex );
         stateCurrent = GamePad.GetState( PlayerIndex );
+
+        // Starting vibration values.
+        slowVibration = 0f;
+        fastVibration = 0f;
+        didVibrationChange = false;
 
         // Map from internal axes enum to functions that return values from the given state.
         axesToFuncsMap = new Dictionary<Xbox360GamepadAxis, Func<GamePadState, float>>()
@@ -410,6 +418,12 @@ public class Xbox360Gamepad : MonoBehaviour
                 }
             }
 
+            // Set vibration state if it was updated within the last frame.
+            if ( didVibrationChange )
+            {
+                GamePad.SetVibration( PlayerIndex, slowVibration, fastVibration );
+            }
+
             // Detect donnection and disconnection events.
             if ( DidConnectionBegin() )
             {
@@ -472,6 +486,11 @@ public class Xbox360Gamepad : MonoBehaviour
         return buttonsToFuncsMap[ key ]( statePrevious );
     }
 
+    public float SetFastVibration()
+    {
+        return fastVibration;
+    }
+
     public GamePadState GetState()
     {
         return stateCurrent;
@@ -480,6 +499,11 @@ public class Xbox360Gamepad : MonoBehaviour
     public GamePadState GetStatePrevious()
     {
         return statePrevious;
+    }
+
+    public float GetSlowVibration()
+    {
+        return slowVibration;
     }
 
     public Vector2 GetVector( Xbox360GamepadVector key )
@@ -492,9 +516,16 @@ public class Xbox360Gamepad : MonoBehaviour
         return vectorsToFuncsMap[ key ]( statePrevious );
     }
 
-    public void SetVibration( float leftMotor, float rightMotor )
+    public void SetFastVibration( float value )
     {
-        GamePad.SetVibration( PlayerIndex, leftMotor, rightMotor );
+        fastVibration = value;
+        didVibrationChange = true;
+    }
+
+    public void SetSlowVibration( float value )
+    {
+        slowVibration = value;
+        didVibrationChange = true;
     }
 
     #endregion
