@@ -44,7 +44,7 @@ if ( gamepad.A )
 
 Maybe you want to react to only exactly when the A button begins being pressed or was just released. If you're a fan of delegates (and I sure am) it's easy!
 
- - Subscribe to the ```AButton.Pressed``` ```UnityEvent```
+ - Subscribe to the ```AButton.Pressed``` ```UnityEvent```.
 
 ```csharp
 // Using UnityEvent subscriber delegates.
@@ -53,9 +53,9 @@ gamepad.AButton.Released.AddListener( () => Debug.Log( "A was released!" ) );
 ```
 
 So what about getting something more complicated, like the the direction of the left analog stick? Well, you've got a few options. You could:
-- Make 2 separate calls to ```GetAxis()``` like you would with the Unity Input Manager, then assemble them into a new Vector2.
-- Call the Gamepad's ```GetVector()``` to get a Vector2 back directly.
-- Access the Gamepad's ```LeftAnalog``` property to get a Vector2 directly and with a little less work.
+- Make 2 separate calls to ```GetAxis()``` like you would with the Unity Input Manager, then assemble them into a new ```Vector2```.
+- Call the Gamepad's ```GetVector()``` to get a ```Vector2``` back directly.
+- Access the Gamepad's ```LeftAnalog``` property to get a ```Vector2``` directly, but with less work (less work is good).
 
 ```csharp
 // Using raw GetAxis() calls.
