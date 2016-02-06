@@ -13,7 +13,9 @@ This library is compatible with both Unity Free and Unity Pro and should run on 
 
 Place a ```GameObject``` in your scene and add a ```ColorPicker``` component to it. You now have a working color picker. Congrats.
 
-Now add a quad to the scene, create a new material and give it a color (or a texture). Drag the material onto your quad. Also, make sure your quad has a mesh collider, because the ```ColorPicker``` uses ```Physics.Raycast()``` work its magic. **If you are using a texture, make sure that your texture is imported using advanced mode and switch on the Read/Write Enabled flag or sampling of colors will fail!**
+Now add a quad to the scene, create a new material and give it a color (or a texture). Drag the material onto your quad. Also, make sure your quad has a ```MeshCollider``` component, because the ```ColorPicker``` uses ```Physics.Raycast()``` work its magic. Chill out. A ```MeshCollider``` composed of 2 tris is cheaper to collide than a ```BoxCollider```!
+
+**If you are using a texture, make sure that your texture is imported using advanced mode and switch on the Read/Write Enabled flag or sampling of colors will fail!**
 
 Once you have a ```ColorPicker``` and some geometry with a material to sample, you're good to go! Aim your ```ColorPicker``` at that quad and enjoy the pretty colors (assuming you chose pretty colors).
 
