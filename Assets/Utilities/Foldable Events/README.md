@@ -5,6 +5,8 @@ Part of the [unity-utilities](https://github.com/DigitalMachinist/unity-utilitie
 
 This library contains two helpful classes that make using ```UnityEvent```s soak up less room in the Unity Inspector, and unlock new powerful strategies for managing difficult-to-reason-about dependency graphs like complex scene loads.
 
+This library works with both Unity Free and Unity Pro, and should be compatible with Unity versions back to 3.x (and possibly earlier).
+
 Your inspector could look like this:
 
 ![Nice clean events that don't scroll forever!](https://raw.githubusercontent.com/DigitalMachinist/unity-utilities/master/Assets/Utilities/Foldable%20Events/FoldableEventInspector.png)

@@ -5,6 +5,8 @@ Part of the [unity-utilities](https://github.com/DigitalMachinist/unity-utilitie
 
 This library contains a class that serves as a software interface for 1 to 4 Xbox 360 Gamepads through the [XInputDotNet](https://github.com/speps/XInputDotNet) library. While this implementation provides excellent features, **it will only run on a Windows PC.** Although this limits the platform targets this can be deployed to, the decision to use XInput enables a variety of gamepad features not available through the standard Unity Input Manager.
 
+This library is compatible with both Unity Free and Unity Pro and should run on Unity versions back to 3.x (and possibly earlier).
+
 ## Gamepad tester
 
 A gamepad tester scene is included with this library to both assist with debugging gamepad issues and to provide simple examples of usage so getting started with the interface isn't too difficult. It provides visualizations of 1 to 4 gamepads and expresses all of the outputs that this interface provides, so that you can confirm that your gamepads are producing the output you expect.
