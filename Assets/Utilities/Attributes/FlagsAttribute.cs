@@ -2,13 +2,49 @@
 using UnityEditor;
 using UnityEngine;
 
-// [Flags] is already defined as System.FlagsAttribute, so we only need this to make a nice Unity
-// Inspector property drawer for flags-style enums.
-[CustomPropertyDrawer( typeof( FlagsAttribute ) )]
-public class EnumFlagsAttributeDrawer : PropertyDrawer
+public class EnumFlagsAttribute : PropertyAttribute
+{
+    public string enumName;
+
+    public EnumFlagsAttribute() { }
+
+    public EnumFlagsAttribute( string name )
+    {
+        enumName = name;
+    }
+}
+
+[CustomPropertyDrawer( typeof( EnumFlagsAttribute ) )]
+public class EnumFlagDrawer : PropertyDrawer
 {
     public override void OnGUI( Rect position, SerializedProperty property, GUIContent label )
     {
-        property.intValue = EditorGUI.MaskField( position, label, property.intValue, property.enumNames );
+        EnumFlagsAttribute flagSettings = (EnumFlagsAttribute)attribute;
+        Enum targetEnum = GetBaseProperty<Enum>( property );
+
+        var propName = flagSettings.enumName;
+        if ( string.IsNullOrEmpty( propName ) )
+            propName = property.name;
+
+        EditorGUI.BeginProperty( position, label, property );
+        Enum enumNew = EditorGUI.EnumMaskField( position, propName, targetEnum );
+        property.intValue = (int)Convert.ChangeType( enumNew, targetEnum.GetType() );
+        EditorGUI.EndProperty();
+    }
+
+    static T GetBaseProperty<T>( SerializedProperty prop )
+    {
+        // Separate the steps it takes to get to this property
+        var separatedPaths = prop.propertyPath.Split( '.' );
+
+        // Go down to the root of this serialized property
+        var reflectionTarget = prop.serializedObject.targetObject as object;
+        // Walk down the path to get the target object
+        foreach ( var path in separatedPaths )
+        {
+            var fieldInfo = reflectionTarget.GetType().GetField( path );
+            reflectionTarget = fieldInfo.GetValue( reflectionTarget );
+        }
+        return (T)reflectionTarget;
     }
 }
