@@ -35,11 +35,11 @@ public virtual void OnControlExit( Animator animator, AnimatorStateInfo stateInf
 
 If you write state scripts that derive from ```State```, you can override these methods to gain access to specially-timed events that guarantee that:
 
-1. The next state's ```OnControlEnter``` is always called immediately after ```OnStateExit``` for the current state.
-2. The previous state's ```OnControlExit``` is always called immediately after ```OnStateEnter``` for the current state.
-3. ```OnControlExit``` is always called immediately after ```OnStateEnter```.
+1. The next state's ```OnControlEnter``` is always called immediately after ```OnStateExit``` for the current state
+2. The previous state's ```OnControlExit``` is always called immediately after ```OnStateEnter``` for the current state
+3. ```OnControlExit``` is always called immediately after ```OnStateEnter```
 
-As a consequence of these guarantees, there will be a gap during state transitions where no control context is in effect. **This is enormously useful!** No longer do players experience weird control glitches or bugs during state transitions, as long as you use ```OnControlEnter``` and ```OnControlExit``` to set up and tear down your control contexts for each state!
+As a consequence of these guarantees, there will be a gap between the control contexts during state transitions where no control context is in effect. **This is enormously useful!** No longer do players experience weird control glitches or bugs during state transitions, as long as you use ```OnControlEnter``` and ```OnControlExit``` to set up and tear down your control contexts for each state!
 
 ## Usage
 
@@ -54,11 +54,11 @@ The ```StateMachine``` component acts as an intermediary between ```State``` beh
 
 Create an animation controller and attach it to the ```Animator```. Set up the states and state transitions you need. Create and add a new class deriving from ```State``` to each state that needs special behaviour.
 
-The ```State``` class gets all of the boilerplate to emit control events and handle errors out of the way so you don't have to write any. All you need to do is make sure that your ```base.<MethodName>()``` calls are in place to tie into ```State``` and it will handle the rest.
+The ```State``` class gets all of the boilerplate out of the way by emitting control events and handling errors so you don't have to. All you need to do is make sure that your ```base.<MethodName>()``` calls are in place to tie into ```State``` and it will handle the rest.
 
 Try to follow this advice and your life will be easier:
 
- - Enable each state's control context (adding listening for control events) using ```OnControlEnter```
+ - Enable each state's control context (adding listeners for control events) using ```OnControlEnter```
  - Disable each state's control context (removing listeners for control events) using ```OnControlExit```
  - Perform any control polling (stuff events aren't well-suited to) in ```OnControlUpdate```
  - Set up any special non-control state in ```OnStateEnter```
