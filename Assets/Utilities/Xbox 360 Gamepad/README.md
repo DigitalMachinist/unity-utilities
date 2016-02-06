@@ -24,7 +24,7 @@ A gamepad tester scene is included with this library to both assist with debuggi
 
 ## Usage
 
-There are lots of ways to get control data from this gamepad interface:
+There are lots of ways to get control data from this gamepad interface.
 
 Let's say you want to check when the A button is pressed and you have a reference to an Xbox 360 Gamepad named ```gamepad``` in scope. You could:
  - Call the Gamepad's ```GetButton()``` method raw like you would with the Unity Input Manager (handy if you need to iterate over buttons/axes).
