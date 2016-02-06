@@ -3,7 +3,7 @@ Color Picker
 
 Part of the [unity-utilities](https://github.com/DigitalMachinist/unity-utilities) GitHub repo by [@DigitalMachinist](https://github.com/DigitalMachinist).
 
-The ```ColorPicker``` class is a color picker that can sample pixels from textures in Unity 3D scenes both in the editor and in real-time during play mode. It can be purposed for use in editor scripts and tools or used in games both, without need for modification.
+The ```ColorPicker``` class is a color picker that can sample colors from materials in Unity 3D scenes both in the editor and in real-time during play mode. It accomplishes this using ```Physics.Raycast()``` and cane sample color from materials with uniform color or textured color , as long as the mesh has a ```MshCollider``` component to collide with. It can be purposed for use in editor scripts and tools or used in games both, without need for modification.
 
 This library is compatible with both Unity Free and Unity Pro and should run on Unity versions back to 3.x (and possibly earlier).
 

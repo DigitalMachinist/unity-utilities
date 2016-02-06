@@ -4,8 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-[Serializable] public class HealthEvent : UnityEvent<Health, int> { }
-[Serializable] public class HealthEffectEvent : UnityEvent<Health, PersistentHealthEffect, int> { }
+[Serializable] public class HealthEvent 
+    : UnityEvent<Health, int> { }
+[Serializable] public class FoldableHealthEvent 
+    : FoldableEvent<HealthEvent, Health, int> { }
+
+[Serializable] public class HealthEffectEvent 
+    : UnityEvent<Health, PersistentHealthEffect, int> { }
+[Serializable] public class FoldableHealthEffectEvent 
+    : FoldableEvent<HealthEffectEvent, Health, PersistentHealthEffect, int> { }
 
 public class PersistentHealthEffect
 {
@@ -103,34 +110,34 @@ public class PersistentHealthEffect
 public class Health : MonoBehaviour
 {
     #region Fields / Events / Properties
-
-    // Public / Inspector
+    
+    [Header( "Configuration" )]
     [Tooltip( "The current number of HP." )]
-    public int HP;
+    public int HP = 100;
     [Tooltip( "The total amount of HP available." )]
-    public int MaxHP;
-    [Tooltip( "Let's get real. How many HP can you REALLY have?" )]
-    public int MaxMaxHP;
+    public int MaxHP = 100;
+    [Tooltip( "How many HP can you REALLY have (when supercharged)?" )]
+    public int SuperMaxHP = 100;
     [Tooltip( "What fraction of HP is considered \"in-danger\"?" )]
     [Range( 0f, 1f )]
-    public float HPDangerFraction = 0.3f;
+    public float HPDangerFraction = 0.25f;
 
-    // Events
-    public HealthEvent Damaged;
-    public HealthEvent Dead;
-    public HealthEvent Healed;
-    public HealthEvent HPChanged;
-    public HealthEvent HPFull;
-    public HealthEvent HPInDanger;
-    public HealthEvent HPSafe;
-    public HealthEvent HPSupercharged;
-    public HealthEvent Revived;
-    public HealthEffectEvent DegenBegan;
-    public HealthEffectEvent DegenEnded;
-    public HealthEffectEvent DegenProc;
-    public HealthEffectEvent RegenBegan;
-    public HealthEffectEvent RegenEnded;
-    public HealthEffectEvent RegenProc;
+    [Header( "Events" )]
+    public FoldableHealthEvent Damaged;
+    public FoldableHealthEvent Dead;
+    public FoldableHealthEvent Healed;
+    public FoldableHealthEvent HPChanged;
+    public FoldableHealthEvent HPFull;
+    public FoldableHealthEvent HPInDanger;
+    public FoldableHealthEvent HPSafe;
+    public FoldableHealthEvent HPSupercharged;
+    public FoldableHealthEvent Revived;
+    public FoldableHealthEffectEvent DegenBegan;
+    public FoldableHealthEffectEvent DegenEnded;
+    public FoldableHealthEffectEvent DegenProc;
+    public FoldableHealthEffectEvent RegenBegan;
+    public FoldableHealthEffectEvent RegenEnded;
+    public FoldableHealthEffectEvent RegenProc;
 
     // Properties
     public Dictionary<string, PersistentHealthEffect> DegenEffects { get; private set; }
@@ -226,7 +233,7 @@ public class Health : MonoBehaviour
         var initial = HP;
         HP += 
             isSuper                                      // If this is a super-heal, 
-                ? Mathf.Min( hpGained, MaxMaxHP - HP )   // Allow healing up to MaxMaxHP.
+                ? Mathf.Min( hpGained, SuperMaxHP - HP )   // Allow healing up to MaxMaxHP.
                 : IsFull                                 // If not AND HP is full, 
                     ? 0                                  // Healing has no effect.
                     : Mathf.Min( hpGained, MaxHP - HP ); // All healing up to MaxHP.
@@ -326,10 +333,10 @@ public class Health : MonoBehaviour
 
     void ApplyEffect( 
         PersistentHealthEffect effect, 
-        Dictionary<string, PersistentHealthEffect> effectMap, 
-        HealthEffectEvent beginEvent,
-        HealthEffectEvent procEvent,
-        HealthEffectEvent endEvent
+        Dictionary<string, PersistentHealthEffect> effectMap,
+        FoldableHealthEffectEvent beginEvent,
+        FoldableHealthEffectEvent procEvent,
+        FoldableHealthEffectEvent endEvent
     )
     {
         if ( effectMap.ContainsKey( effect.Key ) )
@@ -345,7 +352,7 @@ public class Health : MonoBehaviour
     bool RemoveEffect( 
         string key, 
         Dictionary<string, PersistentHealthEffect> effectMap,
-        HealthEffectEvent endEvent 
+        FoldableHealthEffectEvent endEvent 
     )
     {
         if ( !effectMap.ContainsKey( key ) )
@@ -365,9 +372,9 @@ public class Health : MonoBehaviour
 
     IEnumerator EffectCoroutine( 
         PersistentHealthEffect effect,
-        Dictionary<string, PersistentHealthEffect> effectMap, 
-        HealthEffectEvent procEvent,
-        HealthEffectEvent endEvent
+        Dictionary<string, PersistentHealthEffect> effectMap,
+        FoldableHealthEffectEvent procEvent,
+        FoldableHealthEffectEvent endEvent
     )
     {
         var endTime = Time.time + effect.Duration;
