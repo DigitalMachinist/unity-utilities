@@ -34,6 +34,7 @@ public virtual void OnControlExit( Animator animator, AnimatorStateInfo stateInf
 ```
 
 If you write state scripts that derive from ```State```, you can override these methods to gain access to specially-timed events that guarantee that:
+
 1. The next state's ```OnControlEnter``` is always called immediately after ```OnStateExit``` for the current state.
 2. The previous state's ```OnControlExit``` is always called immediately after ```OnStateEnter``` for the current state.
 3. ```OnControlExit``` is always called immediately after ```OnStateEnter```.
