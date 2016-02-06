@@ -62,7 +62,7 @@ public class MyComponent : MonoBehaviour
 
 These fields will now show up in the Inspector with a multi-select dropdown that acts a lot like a ```LayerMask``` property drawer:
 
-![Enum flags field in the inspector](https://raw.githubusercontent.com/DigitalMachinist/unity-utilities/master/Assets/Utilities/Attributes/EnumFlagsAttribute.PNG)
+![Enum flags field in the inspector](https://raw.githubusercontent.com/DigitalMachinist/unity-utilities/master/Assets/Utilities/Attributes/EnumFlagsAttribute.png)
 
 ## ReadOnlyAttribute
 
@@ -84,4 +84,4 @@ public class MyComponent : MonoBehaviour
 
 The read only field will be greyed-out and unmodifiable from the Inspector.
 
-![Read only field in the inspector](https://raw.githubusercontent.com/DigitalMachinist/unity-utilities/master/Assets/Utilities/Attributes/ReadOnlyAttribute.PNG)
+![Read only field in the inspector](https://raw.githubusercontent.com/DigitalMachinist/unity-utilities/master/Assets/Utilities/Attributes/ReadOnlyAttribute.png)
