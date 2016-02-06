@@ -5,6 +5,8 @@ Part of the [unity-utilities](https://github.com/DigitalMachinist/unity-utilitie
 
 This library is based on [this](https://www.reddit.com/r/Unity3D/comments/39eh4x/tutorial_state_machine_behaviours_discouple/) thread from reddit in which [/u/LightStriker_Qc](https://www.reddit.com/user/LightStriker_Qc) proposed implementing an event-based interface to Mecanim states and [/u/loolo78](https://www.reddit.com/user/loolo78) implemented [this](https://www.youtube.com/watch?v=GjwoyqNdimY) as a proof of concept to expose a Mecanic state machine to a Unity application via C# events. This implementation builds upon /u/loolo78's work and expands the possibilities this kind of system affords significantly by making it possible to start and end control contexts without crossover between states, even when transition times are used crossfade visual elements such as UI screens.
 
+![Sample game state machine diagram](https://raw.githubusercontent.com/DigitalMachinist/unity-utilities/master/Assets/Utilities/State%20Machine/StateMachine.png)
+
 This library is compatible with both Unity Free and Unity Pro and should run on Unity versions back to 3.x (and possibly earlier).
 
 ## The Problem
@@ -47,7 +49,7 @@ There are two classes in this library:
 
 To make use of this library and start managing your state entirely with Mecanim, you'll need to set up a ```GameObject``` that contains all of the UI screens that you need to transition between and add both an ```Animator``` components and my custom component ```StateMachine``` to it.
 
-The ```StateMachine``` component acts as an intermediary between ```State``` behaviour scripts and is necessary for the control context methods described above to be called. It provides events that give the rest of the application access to the state behaviour events emitted by each of the ```Animator```'s states. '*If no ```StateMachine``` component is a sibling to the ```Animator``` and error will be logged during each ```OnStateEnter``` and none of the control methods will be called.*
+The ```StateMachine``` component acts as an intermediary between ```State``` behaviour scripts and is necessary for the control context methods described above to be called. It provides events that give the rest of the application access to the state behaviour events emitted by each of the ```Animator```'s states. *If no ```StateMachine``` component is a sibling to the ```Animator``` and error will be logged during each ```OnStateEnter``` and none of the control methods will be called.*
 
 Create an animation controller and attach it to the ```Animator```. Set up the states and state transitions you need. Create and add a new class deriving from ```State``` to each state that needs special behaviour.
 
