@@ -78,7 +78,7 @@ Simply prefix the ```[ReadOnly]``` attribute before the field you want to protec
 public class MyComponent : MonoBehaviour
 {
   [ReadOnly]
-  public int Number;
+  public int Number = 5;
 }
 ```
 
