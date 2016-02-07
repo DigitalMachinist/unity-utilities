@@ -88,11 +88,11 @@ TODO
 
 TODO
 
-#### Coroutine Graphic.FadeGraphic( float seconds, float targetAlpha, bool UseUnscaledTime )
+#### Coroutine CanvasGroup.FadeCanvasGroup( float seconds, float targetAlpha, bool useUnscaledTime, MonoBehaviour context )
 
 
 
-#### Coroutine CanvasGroup.FadeCanvasGroup( float seconds, float targetAlpha, bool UseUnscaledTime, MonoBehaviour context )
+#### Coroutine Graphic.FadeGraphic( float seconds, float targetAlpha, bool useUnscaledTime )
 
 
 
