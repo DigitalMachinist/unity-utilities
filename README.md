@@ -3,6 +3,8 @@ unity-utilities
 
 A collection of utilities for Unity (with accompanying documentation and test scenes) that I use in personal projects and at Axon Interactive. It includes a variety of tools that can be used together or separately to make game development a little bit easier.
 
+The root folder of this project contains a series of .unitypackage files that make importing specific features into projects, but of course you are free to make use of these files however suits you best.
+
 ## Attributes
 
 [Assets/Utilities/Attributes](https://github.com/DigitalMachinist/unity-utilities/tree/master/Assets/Utilities/Attributes)
