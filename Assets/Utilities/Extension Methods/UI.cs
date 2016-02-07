@@ -8,22 +8,38 @@ public static partial class UnityExtensionMethods
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="trans"></param>
-    public static void SetDefaultScale( this RectTransform trans )
+    /// <param name="cg"></param>
+    /// <param name="seconds"></param>
+    /// <param name="targetAlpha"></param>
+    /// <param name="useUnscaledTime"></param>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    public static Coroutine FadeCanvasGroup( this CanvasGroup cg, float seconds, float targetAlpha, bool useUnscaledTime, MonoBehaviour context )
     {
-        trans.localScale = new Vector3( 1, 1, 1 );
+        return context.StartCoroutine( FadeCanvasGroupOverSeconds( cg, seconds, targetAlpha, useUnscaledTime ) );
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="graphic"></param>
+    /// <param name="seconds"></param>
+    /// <param name="targetAlpha"></param>
+    /// <param name="useUnscaledTime"></param>
+    /// <returns></returns>
+    public static Coroutine FadeGraphic( this Graphic graphic, float seconds, float targetAlpha, bool useUnscaledTime )
+    {
+        return graphic.StartCoroutine( FadeGraphicOverSeconds( graphic, seconds, targetAlpha, useUnscaledTime ) );
     }
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="trans"></param>
-    /// <param name="aVec"></param>
-    public static void SetPivotAndAnchors( this RectTransform trans, Vector2 aVec )
+    /// <returns></returns>
+    public static float GetHeight( this RectTransform trans )
     {
-        trans.pivot = aVec;
-        trans.anchorMin = aVec;
-        trans.anchorMax = aVec;
+        return trans.rect.height;
     }
 
     /// <summary>
@@ -50,20 +66,19 @@ public static partial class UnityExtensionMethods
     /// 
     /// </summary>
     /// <param name="trans"></param>
-    /// <returns></returns>
-    public static float GetHeight( this RectTransform trans )
+    public static void SetDefaultScale( this RectTransform trans )
     {
-        return trans.rect.height;
+        trans.localScale = new Vector3( 1, 1, 1 );
     }
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="trans"></param>
-    /// <param name="newPos"></param>
-    public static void SetPositionOfPivot( this RectTransform trans, Vector2 newPos )
+    /// <param name="newSize"></param>
+    public static void SetHeight( this RectTransform trans, float newSize )
     {
-        trans.localPosition = new Vector3( newPos.x, newPos.y, trans.localPosition.z );
+        SetSize( trans, new Vector2( trans.rect.size.x, newSize ) );
     }
 
     /// <summary>
@@ -84,6 +99,28 @@ public static partial class UnityExtensionMethods
     public static void SetLeftTopPosition( this RectTransform trans, Vector2 newPos )
     {
         trans.localPosition = new Vector3( newPos.x + ( trans.pivot.x * trans.rect.width ), newPos.y - ( ( 1f - trans.pivot.y ) * trans.rect.height ), trans.localPosition.z );
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="trans"></param>
+    /// <param name="aVec"></param>
+    public static void SetPivotAndAnchors( this RectTransform trans, Vector2 aVec )
+    {
+        trans.pivot = aVec;
+        trans.anchorMin = aVec;
+        trans.anchorMax = aVec;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="trans"></param>
+    /// <param name="newPos"></param>
+    public static void SetPositionOfPivot( this RectTransform trans, Vector2 newPos )
+    {
+        trans.localPosition = new Vector3( newPos.x, newPos.y, trans.localPosition.z );
     }
 
     /// <summary>
@@ -132,16 +169,6 @@ public static partial class UnityExtensionMethods
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="trans"></param>
-    /// <param name="newSize"></param>
-    public static void SetHeight( this RectTransform trans, float newSize )
-    {
-        SetSize( trans, new Vector2( trans.rect.size.x, newSize ) );
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
     /// <param name="res"></param>
     /// <returns></returns>
     public static string ToResolutionString( this Resolution res )
@@ -167,32 +194,7 @@ public static partial class UnityExtensionMethods
                             ( viewportPosition.y * canvasRect.sizeDelta.y ) - ( canvasRect.sizeDelta.y * 0.5f ) );
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="graphic"></param>
-    /// <param name="seconds"></param>
-    /// <param name="targetAlpha"></param>
-    /// <param name="UseUnscaledTime"></param>
-    /// <returns></returns>
-    public static Coroutine FadeGraphic( this Graphic graphic, float seconds, float targetAlpha, bool UseUnscaledTime )
-    {
-        return graphic.StartCoroutine( FadeGraphicOverSeconds( graphic, seconds, targetAlpha, UseUnscaledTime ) );
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="cg"></param>
-    /// <param name="seconds"></param>
-    /// <param name="targetAlpha"></param>
-    /// <param name="UseUnscaledTime"></param>
-    /// <param name="context"></param>
-    /// <returns></returns>
-    public static Coroutine FadeCanvasGroup( this CanvasGroup cg, float seconds, float targetAlpha, bool UseUnscaledTime, MonoBehaviour context )
-    {
-        return context.StartCoroutine( FadeCanvasGroupOverSeconds( cg, seconds, targetAlpha, UseUnscaledTime ) );
-    }
+    #region Private Helpers
 
     /// <summary>
     /// 
@@ -264,4 +266,6 @@ public static partial class UnityExtensionMethods
             yield return alpha;
         } while ( dtAcc < seconds );
     }
+
+    #endregion
 }

@@ -9,8 +9,6 @@ Each of the included attributes is declared in a separate file, so you can pick 
 
 This library is compatible with both Unity Free and Unity Pro and should run on Unity versions back to 3.x (and possibly earlier).
 
-**Note:** This library depends on the ```ReadOnlyAttribute``` class (also contained in this repo).
-
 ## Included attributes
 
  - ```EnumFlagsAttribute```
@@ -18,7 +16,7 @@ This library is compatible with both Unity Free and Unity Pro and should run on 
 
 ### EnumFlagsAttribute
 
-*Credit for this goes to Unify Community for [this implementation](http://wiki.unity3d.com/index.php/EnumFlagPropertyDrawer).*
+*Credit goes to Unify Community for [this attribute  implementation](http://wiki.unity3d.com/index.php/EnumFlagPropertyDrawer).*
 
 This ```FlagsAttribute``` attribute provides a better interface for flags-style enumerations in the Unity Inspector. Typically, the Inspector displays enumerations as a dropdown selection which allows you to pick exactly 1 value from the enum. While this is suitable behaviour for some enumerations, when an enumeration was declared using the ```[System.Flags]``` attribute, several bits of the flags enum may be set simultaneously, which is at odds with the standard Inspector control.
 
@@ -69,7 +67,7 @@ These fields will now show up in the Inspector with a multi-select dropdown that
 
 ## ReadOnlyAttribute
 
-*Credit for this implementation goes to [@JamesZinger](https://github.com/JamesZinger).*
+*Credit for this attribute implementation goes to [@JamesZinger](https://github.com/JamesZinger).*
 
 The ```ReadOnlyAttribute``` attribute allows you to make a field that appears in the inspector read only.
 
