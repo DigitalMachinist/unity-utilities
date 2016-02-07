@@ -66,7 +66,7 @@ These fields will now show up in the Inspector with a multi-select dropdown that
 
 ## ReadOnlyAttribute
 
-*Credit for this implementation goes to @JamesZinger.*
+*Credit for this implementation goes to [@JamesZinger](https://github.com/JamesZinger).*
 
 The ```ReadOnlyAttribute``` attribute allows you to make a field that appears in the inspector read only.
 
