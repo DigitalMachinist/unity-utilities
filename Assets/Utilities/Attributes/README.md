@@ -1,3 +1,6 @@
+Inspector Attributes
+====================
+
 Part of the [unity-utilities](https://github.com/DigitalMachinist/unity-utilities) GitHub repo by [@DigitalMachinist](https://github.com/DigitalMachinist).
 
 The classes included in this library provide specialized attributes that affect the way fields appear in the Unity Inspector. They don't do anything to change behaviour of the fields to which they are applied, but they change how developers can interact with them in the Inspector (they don't change how they can be used in code).
