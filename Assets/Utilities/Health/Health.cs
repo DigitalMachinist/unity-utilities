@@ -4,123 +4,36 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-[Serializable] public class HealthEvent 
-    : UnityEvent<Health, int> { }
-[Serializable] public class FoldableHealthEvent 
-    : FoldableEvent<HealthEvent, Health, int> { }
+[Serializable]
+public class HealthEvent : UnityEvent<Health, float> { }
 
-[Serializable] public class HealthEffectEvent 
-    : UnityEvent<Health, PersistentHealthEffect, int> { }
-[Serializable] public class FoldableHealthEffectEvent 
-    : FoldableEvent<HealthEffectEvent, Health, PersistentHealthEffect, int> { }
+[Serializable]
+public class FoldableHealthEvent : FoldableEvent<HealthEvent, Health, float> { }
 
-public class PersistentHealthEffect
-{
-    public string Key;
-    public string Description;
-    public float Duration;
-    public float Period;
-    public Func<Health, int> EffectBeginFunc;
-    public Func<Health, int> EffectProcFunc;
-    public Func<Health, int> EffectEndFunc;
-    public Func<Health, bool> ResistFunc;
-    public IEnumerator EffectCoroutineHandle;
+[Serializable]
+public class HealthEffectEvent : UnityEvent<Health, PersistentHealthEffect, float> { }
 
-    public bool HasBeginEffect
-    {
-        get { return ( EffectBeginFunc != null ); }
-    }
-    public bool HasProcEffect
-    {
-        get { return ( EffectProcFunc != null ); }
-    }
-    public bool HasEndEffect
-    {
-        get { return ( EffectEndFunc != null ); }
-    }
-    public bool HasResistFunc
-    {
-        get { return ( ResistFunc != null ); }
-    }
-    public bool IsOver
-    {
-        get { return ( EffectCoroutineHandle == null ); }
-    }
+[Serializable]
+public class FoldableHealthEffectEvent : FoldableEvent<HealthEffectEvent, Health, PersistentHealthEffect, float> { }
 
-    public int GetBeginEffect( Health health )
-    {
-        return
-            HasBeginEffect
-                ? EffectBeginFunc( health )
-                : 0;
-    }
-    public int GetProcEffect( Health health )
-    {
-        return
-            HasProcEffect
-                ? EffectProcFunc( health )
-                : 0;
-    }
-    public int GetEndEffect( Health health )
-    {
-        return
-            HasEndEffect
-                ? EffectEndFunc( health )
-                : 0;
-    }
-    public bool GetResist( Health health )
-    {
-        return
-            HasResistFunc
-                ? ResistFunc( health )
-                : false;
-    }
-
-    public PersistentHealthEffect( 
-        string key,
-        string description,
-        float duration, 
-        float period,
-        Func<Health, int> effectBeginFunc = null,
-        Func<Health, int> effectProcFunc = null,
-        Func<Health, int> effectEndFunc = null,
-        Func<Health, bool> resistFunc = null
-    )
-    {
-        if ( duration <= 0 )
-        {
-            throw new ArgumentOutOfRangeException( "duration", "Must be larger than 0." );
-        }
-        if ( period <= 0 )
-        {
-            throw new ArgumentOutOfRangeException( "period", "Must be larger than 0." );
-        }
-
-        Key = key;
-        Description = description;
-        Duration = duration;
-        Period = period;
-        EffectBeginFunc = effectBeginFunc;
-        EffectProcFunc = effectProcFunc;
-        EffectEndFunc = effectEndFunc;
-        ResistFunc = resistFunc;
-    }
-}
-
+[Serializable]
 public class Health : MonoBehaviour
 {
     #region Fields / Events / Properties
     
     [Header( "Configuration" )]
     [Tooltip( "The current number of HP." )]
-    public int HP = 100;
+    public float HP = 100f;
     [Tooltip( "The total amount of HP available." )]
-    public int MaxHP = 100;
+    public float MaxHP = 100f;
     [Tooltip( "How many HP can you REALLY have (when supercharged)?" )]
-    public int SuperMaxHP = 100;
+    public float SuperMaxHP = 100f;
     [Tooltip( "What fraction of HP is considered \"in-danger\"?" )]
     [Range( 0f, 1f )]
     public float HPDangerFraction = 0.25f;
+    [Tooltip( "History period (seconds)" )]
+    [Range( 0f, 10f )]
+    public float HistorySeconds = 2f;
 
     [Header( "Events" )]
     public FoldableHealthEvent Damaged;
@@ -141,10 +54,11 @@ public class Health : MonoBehaviour
 
     // Properties
     public Dictionary<string, PersistentHealthEffect> DegenEffects { get; private set; }
+    public HealthHistory History { get; private set; }
     public Dictionary<string, PersistentHealthEffect> RegenEffects { get; private set; }
 
     // Computed Properties
-    public int DangerHP
+    public float DangerHP
     {
         get { return Mathf.RoundToInt( HPDangerFraction * MaxHP ); }
     }
@@ -170,25 +84,34 @@ public class Health : MonoBehaviour
     }
 
     // Mini Helper Functions
-    public bool GetIsDead( int hp )
+    public bool GetIsDead( float hp )
     {
         return ( hp <= 0 );
     }
-    public bool GetIsFull( int hp )
+    public bool GetIsFull( float hp )
     {
         return ( hp >= MaxHP );
     }
-    public bool GetIsInDanger( int hp )
+    public bool GetIsInDanger( float hp )
     {
         return ( hp <= DangerHP );
     }
-    public bool GetIsSafe( int hp )
+    public bool GetIsSafe( float hp )
     {
         return !GetIsInDanger( hp );
     }
-    public bool GetIsSupercharged( int hp )
+    public bool GetIsSupercharged( float hp )
     {
         return ( hp >= MaxHP );
+    }
+
+    #endregion
+
+    #region Unity Messages
+
+    void Awake()
+    {
+        History = new HealthHistory( HistorySeconds );
     }
 
     #endregion
@@ -196,7 +119,7 @@ public class Health : MonoBehaviour
 
     #region Public API
 
-    public int ApplyDamage( int hpLost )
+    public float ApplyDamage( float hpLost, int reason )
     {
         if ( IsDead )
         {
@@ -206,6 +129,7 @@ public class Health : MonoBehaviour
 
         var initial = HP;
         HP -= hpLost;
+        History.Add( -hpLost, reason );
 
         HPChanged.Invoke( this, -hpLost );
         Damaged.Invoke( this, -hpLost );
@@ -222,7 +146,7 @@ public class Health : MonoBehaviour
         return -hpLost;
     }
 
-    public int ApplyHealing( int hpGained, bool isSuper = false )
+    public float ApplyHealing( float hpGained, int reason, bool isSuper = false )
     {
         if ( IsDead )
         {
@@ -230,13 +154,16 @@ public class Health : MonoBehaviour
             return 0;
         }
 
-        var initial = HP;
-        HP += 
+        var hpGainedReally = 
             isSuper                                      // If this is a super-heal, 
-                ? Mathf.Min( hpGained, SuperMaxHP - HP )   // Allow healing up to MaxMaxHP.
+                ? Mathf.Min( hpGained, SuperMaxHP - HP ) // Allow healing up to MaxMaxHP.
                 : IsFull                                 // If not AND HP is full, 
                     ? 0                                  // Healing has no effect.
                     : Mathf.Min( hpGained, MaxHP - HP ); // All healing up to MaxHP.
+
+        var initial = HP;
+        HP += hpGainedReally;
+        History.Add( hpGainedReally, reason );
 
         if ( HP - initial == 0 )
         {
@@ -264,22 +191,22 @@ public class Health : MonoBehaviour
         return hpGained;
     }
 
-    public void SetHP( int hp )
+    public void SetHP( int hp, int reason )
     {
         var diff = hp - HP;
         if ( diff > 0 )
         {
-            ApplyHealing( diff );
+            ApplyHealing( diff, reason, true );
         }
         else if ( diff < 0 )
         {
-            ApplyDamage( -diff );
+            ApplyDamage( -diff, reason );
         }
     }
 
-    public void Revive()
+    public void Revive( int reason )
     {
-        SetHP( 1 );
+        SetHP( 1, reason );
     }
 
     public void ApplyDegen( 
@@ -287,14 +214,15 @@ public class Health : MonoBehaviour
         string description, 
         float duration, 
         float period,
-        Func<Health, int> effectBeginFunc = null,
-        Func<Health, int> effectProcFunc = null,
-        Func<Health, int> effectEndFunc = null,
+        int reason, 
+        Func<Health, float> effectBeginFunc = null,
+        Func<Health, float> effectProcFunc = null,
+        Func<Health, float> effectEndFunc = null,
         Func<Health, bool> resistFunc = null
     )
     {
         var effect = new PersistentHealthEffect( 
-            key, description, duration, period, effectBeginFunc, effectProcFunc, effectEndFunc, resistFunc 
+            key, description, duration, period, reason, effectBeginFunc, effectProcFunc, effectEndFunc, resistFunc 
         );
         ApplyEffect( effect, DegenEffects, DegenBegan, DegenProc, DegenEnded );
     }
@@ -304,14 +232,15 @@ public class Health : MonoBehaviour
         string description,
         float duration, 
         float period,
-        Func<Health, int> effectBeginFunc = null,
-        Func<Health, int> effectProcFunc = null,
-        Func<Health, int> effectEndFunc = null,
+        int reason, 
+        Func<Health, float> effectBeginFunc = null,
+        Func<Health, float> effectProcFunc = null,
+        Func<Health, float> effectEndFunc = null,
         Func<Health, bool> resistFunc = null
     )
     {
         var effect = new PersistentHealthEffect(
-            key, description, duration, period, effectBeginFunc, effectProcFunc, effectEndFunc, resistFunc
+            key, description, duration, period, reason, effectBeginFunc, effectProcFunc, effectEndFunc, resistFunc
         );
         ApplyEffect( effect, RegenEffects, RegenBegan, RegenProc, RegenEnded );
     }
@@ -380,15 +309,18 @@ public class Health : MonoBehaviour
         var endTime = Time.time + effect.Duration;
         while ( Time.time >= endTime )
         {
-            yield return new WaitForSeconds( effect.Period );
+            if ( effect.Period > 0f )
+            {
+                yield return new WaitForSeconds( effect.Period );
+            }
             var hpGained = effect.GetProcEffect( this );
             if ( hpGained > 0 )
             {
-                ApplyHealing( hpGained );
+                ApplyHealing( hpGained, effect.Reason );
             }
             else if ( hpGained < 0 )
             {
-                ApplyDamage( -hpGained );
+                ApplyDamage( -hpGained, effect.Reason );
             }
             procEvent.Invoke( this, effect, hpGained );
         }
