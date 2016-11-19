@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 
 /// <summary>
 /// The State class is a specialized StateMachineBehaviour that provides an event interface for 
@@ -12,14 +13,19 @@ public class State : StateMachineBehaviour
 {
     public string Name = "";
 
-    public StateMachineEvent StateEnter;
-    public StateMachineEvent StateUpdate;
-    public StateMachineEvent StateExit;
-    public StateMachineEvent ControlEnter;
-    public StateMachineEvent ControlUpdate;
-    public StateMachineEvent ControlExit;
+    [NonSerialized] public StateMachineEvent StateEnter = new StateMachineEvent();
+    [NonSerialized] public StateMachineEvent StateUpdate = new StateMachineEvent();
+    [NonSerialized] public StateMachineEvent StateExit = new StateMachineEvent();
+    [NonSerialized] public StateMachineEvent ControlEnter = new StateMachineEvent();
+    [NonSerialized] public StateMachineEvent ControlUpdate = new StateMachineEvent();
+    [NonSerialized] public StateMachineEvent ControlExit = new StateMachineEvent();
 
     public StateMachine StateMachine { get; private set; }
+
+    public bool IsActive
+    {
+        get { return StateMachine.CurrentState == this; }
+    }
 
     /// <summary>
     /// Called when the state begins.
@@ -32,31 +38,41 @@ public class State : StateMachineBehaviour
         // Get a ref to the StateMachine if one isn't set already.
         if ( StateMachine == null )
         {
+            // TODO Consider providing a way to automatically create a StateMachine on the parent object.
             StateMachine = animator.GetComponent<StateMachine>();
         }
+
+        // If StateMachine is still null then we have a problem.
+        if ( StateMachine == null )
+        {
+            Debug.LogError( "State requires a StateMachine to support control context callbacks! Control contest events will not be emitted and OnControlEnter(), OnControlUpdate() and OnControlExit() will not be called until a StateMachine is available." );
+            return;
+        }
+
+        // This state is now entering.
+        StateMachine.SetEnteringState( this );
 
         // Emit an event to signal this state enter to other objects.
         StateEnter.Invoke( this, animator, stateInfo, layerIndex );
 
-        if ( StateMachine != null )
+        if ( StateMachine.LogStateEnters )
         {
-            if ( StateMachine.IsDebugLogging )
-            {
-                Debug.Log( "OnStateEnter: " + Name );
-            }
+            Debug.Log( "OnStateEnter: " + Name );
         }
-        else
-        {
-            // If StateMachine is still null then we have a problem.
-            Debug.LogError( "State requires a StateMachine to support control context callbacks! Control contest events will not be emitted and OnControlEnter(), OnControlUpdate() and OnControlExit() will not be called until a StateMachine is available." );
-            return;
-        }
-        
-        // This state is now entering.
-        StateMachine.SetEnteringState( this );
-        
+
         // Notify the previous state that the next state (this one) has entered.
-        if ( StateMachine.CurrentState != null )
+        if ( StateMachine.MostRecentState != null )
+        {
+            // If there is a most recent state, then we're resuming control state from
+            // where another state left off after passing through one or more mechanim
+            // states that didn't have States attached. We need to clear MostRecentState
+            // now so this doesn't get detected again incorrectly.
+            StateMachine.MostRecentState.OnControlExit( animator, stateInfo, layerIndex );
+            OnControlEnter( animator, stateInfo, layerIndex );
+            StateMachine.SetMostRecentState( null );
+            StateMachine.SetExitingState( null );
+        }
+        else if ( StateMachine.CurrentState != null )
         {
             StateMachine.CurrentState.OnControlExit( animator, stateInfo, layerIndex );
         }
@@ -92,7 +108,7 @@ public class State : StateMachineBehaviour
         // Emit an event to signal this state enter to other objects.
         ControlEnter.Invoke( this, animator, stateInfo, layerIndex );
 
-        if ( StateMachine.IsDebugLogging )
+        if ( StateMachine.LogControlEnters )
         {
             Debug.Log( "OnControlEnter: " + Name );
         }
@@ -109,19 +125,22 @@ public class State : StateMachineBehaviour
         // Emit an event to signal this state update to other objects.
         StateUpdate.Invoke( this, animator, stateInfo, layerIndex );
 
+        if ( StateMachine.LogStateUpdates )
+        {
+            Debug.Log( "OnStateUpdate: " + Name );
+        }
+
+        // The rest of this method shouldn't run if no StateMachine is available.
+        if ( StateMachine == null )
+        {
+            return;
+        }
+
         // Drive the special update function below. It only executes when this state is the only 
         // active state. As soon as any transition begins it no longer runs.
-        if ( StateMachine != null )
+        if ( StateMachine.CurrentState == this )
         {
-            if ( StateMachine.IsDebugLogging )
-            {
-                Debug.Log( "OnStateUpdate: " + Name );
-            }
-
-            if ( StateMachine.CurrentState == this )
-            {
-                OnControlUpdate( animator, stateInfo, layerIndex );
-            }
+            OnControlUpdate( animator, stateInfo, layerIndex );
         }
     }
 
@@ -143,7 +162,7 @@ public class State : StateMachineBehaviour
         // Emit an event to signal this state update to other objects.
         ControlUpdate.Invoke( this, animator, stateInfo, layerIndex );
 
-        if ( StateMachine.IsDebugLogging )
+        if ( StateMachine.LogControlUpdates )
         {
             Debug.Log( "OnControlUpdate: " + Name );
         }
@@ -160,21 +179,30 @@ public class State : StateMachineBehaviour
         // Emit an event to signal this state exit to other objects.
         StateExit.Invoke( this, animator, stateInfo, layerIndex );
 
-        if ( StateMachine != null )
+        if ( StateMachine.LogStateExits )
         {
-            if ( StateMachine.IsDebugLogging )
-            {
-                Debug.Log( "OnStateExit: " + Name );
-            }
+            Debug.Log( "OnStateExit: " + Name );
+        }
 
-            // This state has now finished exiting.
-            StateMachine.SetExitingState( null );
+        // The rest of this method shouldn't run if no StateMachine is available.
+        if ( StateMachine == null )
+        {
+            return;
+        }
 
+        // This state has now finished exiting.
+        StateMachine.SetExitingState( null );
+
+        if ( StateMachine.EnteringState != null )
+        {
             // Notify the next state that the previous state (this one) has exited.
-            if ( StateMachine.EnteringState != null )
-            {
-                StateMachine.EnteringState.OnControlEnter( animator, stateInfo, layerIndex );
-            }
+            StateMachine.EnteringState.OnControlEnter( animator, stateInfo, layerIndex );
+        }
+        else
+        {
+            // Store the current state as the most recent state so that the next active state 
+            // can pick up from where we left off.
+            StateMachine.SetMostRecentState( this );
         }
     }
 
@@ -200,7 +228,7 @@ public class State : StateMachineBehaviour
         // Emit an event to signal this state exit to other objects.
         ControlExit.Invoke( this, animator, stateInfo, layerIndex );
 
-        if ( StateMachine.IsDebugLogging )
+        if ( StateMachine.LogControlExits )
         {
             Debug.Log( "OnControlExit: " + Name );
         }

@@ -15,15 +15,15 @@ using UnityEngine.Events;
 [RequireComponent( typeof( Animator ) )]
 public class StateMachine : MonoBehaviour
 {
-    public bool IsDebugLogging = false;
+    [Header( "Debug Logging" )]
+    public bool LogControlEnters = false;
+    public bool LogStateEnters = false;
+    public bool LogControlExits = false;
+    public bool LogStateExits = false;
+    public bool LogControlUpdates = false;
+    public bool LogStateUpdates = false;
 
-    public Animator Animator { get; private set; }
-    public State CurrentState { get; private set; }
-    public State EnteringState { get; private set; }
-    public State ExitingState { get; private set; }
-    public bool IsStarted { get; private set; }
-    public bool IsTransitioning { get; private set; }
-
+    [Header( "Events" )]
     public StateMachineEvent ControlEnter;
     public StateMachineEvent ControlUpdate;
     public StateMachineEvent ControlExit;
@@ -31,8 +31,17 @@ public class StateMachine : MonoBehaviour
     public StateMachineEvent StateUpdate;
     public StateMachineEvent StateExit;
 
+    public Animator Animator { get; private set; }
+    public State CurrentState { get; private set; }
+    public State EnteringState { get; private set; }
+    public State ExitingState { get; private set; }
+    public bool IsStarted { get; private set; }
+    public bool IsTransitioning { get; private set; }
+    public State MostRecentState { get; private set; }
+
     public void SetCurrentState( State state )
     {
+        MostRecentState = CurrentState;
         CurrentState = state;
         IsTransitioning = true;
     }
@@ -46,6 +55,11 @@ public class StateMachine : MonoBehaviour
     {
         ExitingState = state;
         IsTransitioning = false;
+    }
+
+    public void SetMostRecentState( State state )
+    {
+        MostRecentState = state;
     }
 
     public void SetIsStarted()
