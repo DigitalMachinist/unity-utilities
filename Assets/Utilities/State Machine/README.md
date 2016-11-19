@@ -3,7 +3,7 @@ State Machine
 
 Part of the [unity-utilities](https://github.com/DigitalMachinist/unity-utilities) GitHub repo by [@DigitalMachinist](https://github.com/DigitalMachinist).
 
-This library is based on [this](https://www.reddit.com/r/Unity3D/comments/39eh4x/tutorial_state_machine_behaviours_discouple/) thread from reddit in which [/u/LightStriker_Qc](https://www.reddit.com/user/LightStriker_Qc) proposed implementing an event-based interface to Mecanim states and [/u/loolo78](https://www.reddit.com/user/loolo78) implemented [this](https://www.youtube.com/watch?v=GjwoyqNdimY) as a proof of concept to expose a Mecanic state machine to a Unity application via C# events. This implementation builds upon /u/loolo78's work and expands the possibilities this kind of system affords significantly by making it possible to start and end control contexts without crossover between states, even when transition times are used crossfade visual elements such as UI screens.
+This library is based on [this](https://www.reddit.com/r/Unity3D/comments/39eh4x/tutorial_state_machine_behaviours_discouple/) thread from reddit in which [/u/LightStriker_Qc](https://www.reddit.com/user/LightStriker_Qc) proposed implementing an event-based interface to Mecanim states and [/u/loolo78](https://www.reddit.com/user/loolo78) implemented [this](https://www.youtube.com/watch?v=GjwoyqNdimY) as a proof of concept to expose a Mecanic state machine to a Unity application via C# events. This implementation builds upon /u/loolo78's work and expands the possibilities this kind of system affords significantly by making it possible to start and end control contexts without crossover between states, even when transition times are used to blend animated visuals such as UI screens or even player character animation states.
 
 ![Sample game state machine diagram](https://raw.githubusercontent.com/DigitalMachinist/unity-utilities/master/Assets/Utilities/State%20Machine/StateMachine.png)
 
@@ -43,18 +43,19 @@ As a consequence of these guarantees, there will be a gap between the control co
 
 ## Usage
 
-There are two classes in this library:
+There are three classes in this library:
 
-1. ```StateMachine```
-2. ```State```
+1. ```AnimatorStateMachine```
+2. ```AnimatorState```
+2. ```AnimatorLayer```
 
-To make use of this library and start managing your state entirely with Mecanim, you'll need to set up a ```GameObject``` that contains all of the UI screens that you need to transition between and add both an ```Animator``` components and my custom component ```StateMachine``` to it.
+To make use of this library and start managing your state entirely with Mecanim, you'll need to set up a ```GameObject``` that contains all of the UI screens or other such animation states that you need to transition between and add both an ```Animator``` components and my custom component ```AnimatorStateMachine``` to it.
 
-The ```StateMachine``` component acts as an intermediary between ```State``` behaviour scripts and is necessary for the control context methods described above to be called. It provides events that give the rest of the application access to the state behaviour events emitted by each of the ```Animator```'s states. *If no ```StateMachine``` component is a sibling to the ```Animator``` and error will be logged during each ```OnStateEnter``` and none of the control methods will be called.*
+The ```AnimatorStateMachine``` component contains a collections of ```AnimatorLayer```s. These contain context information driven by ```AnimatorStates``` and are necessary for the control context methods described above to be called. Each ```AnimatorLayer``` provides events that give the rest of the application access to the state behaviour events emitted by each of the ```Animator```'s Mechanim states. *If no ```AnimatorStateMachine``` component is a sibling to the ```Animator``` an error will be logged during each ```OnStateEnter``` and none of the control methods will be called (but it is a required component, so you shouldn't run into this often).*
 
-Create an animation controller and attach it to the ```Animator```. Set up the states and state transitions you need. Create and add a new class deriving from ```State``` to each state that needs special behaviour.
+Create an animation controller and attach it to the ```Animator```. Set up the states and state transitions you need. Create and add a new class deriving from ```AnimatorState``` to each state that needs special behaviour.
 
-The ```State``` class gets all of the boilerplate out of the way by emitting control events and handling errors so you don't have to. All you need to do is make sure that your ```base.<MethodName>()``` calls are in place to tie into ```State``` and it will handle the rest.
+The ```AnimatorState``` class gets all of the boilerplate out of the way by emitting control events and handling errors so you don't have to. All you need to do is make sure that your ```base.<MethodName>()``` calls are in place to tie into ```AnimatorState``` and it will handle the rest.
 
 Try to follow this advice and your life will be easier:
 
@@ -66,4 +67,4 @@ Try to follow this advice and your life will be easier:
  - Perform any special per-frame state login in ```OnStateUpdate```
  - **Make sure to call the base methods!**
 
-Any that's about it! Feel free to check out the source code if you need to know more.
+Anyway, that's about it! Feel free to check out the source code if you need to know more and feel free to post issues if you're having trouble. I'll try to stay on top of this and keep improving!
