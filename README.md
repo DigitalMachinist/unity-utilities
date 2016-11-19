@@ -3,8 +3,6 @@ unity-utilities
 
 A collection of utilities for Unity (with accompanying documentation and test scenes) that I use in personal projects and at Axon Interactive. It includes a variety of tools that can be used together or separately to make game development a little bit easier.
 
-The root folder of this project contains a series of .unitypackage files that make importing specific features into projects, but of course you are free to make use of these files however suits you best.
-
 ## Attributes
 
 [Assets/Utilities/Attributes](https://github.com/DigitalMachinist/unity-utilities/tree/master/Assets/Utilities/Attributes)
@@ -39,7 +37,7 @@ This library contains the ```Health``` component, which provides the usual HP he
 
 [Assets/Utilities/State Machine](https://github.com/DigitalMachinist/unity-utilities/tree/master/Assets/Utilities/State%20Machine)
 
-This library contains the ```StateMachine``` component, which augments the built-in ```Animator``` to provide a full-featured state machine for handling game state, control context, and UI screens. It also exposes the ```State``` class, a specialized ```StateMachineBehaviour``` which complements ```StateMachine``` to provide these features.
+This library contains the ```AnimatorStateMachine``` component, which augments the built-in ```Animator``` to provide a full-featured state machine for handling game state, control context, UI screens, PC animation states... you name it. It also exposes the ```AnimatorState``` class, a specialized ```StateMachineBehaviour``` which complements ```StateMachine``` to provide these features. It can even handle layered Mechanim state machines now!
 
 ## Xbox 360 Gamepad
 
