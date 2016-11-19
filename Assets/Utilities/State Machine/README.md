@@ -3,11 +3,11 @@ State Machine
 
 Part of the [unity-utilities](https://github.com/DigitalMachinist/unity-utilities) GitHub repo by [@DigitalMachinist](https://github.com/DigitalMachinist).
 
-This library is based on [this](https://www.reddit.com/r/Unity3D/comments/39eh4x/tutorial_state_machine_behaviours_discouple/) thread from reddit in which [/u/LightStriker_Qc](https://www.reddit.com/user/LightStriker_Qc) proposed implementing an event-based interface to Mecanim states and [/u/loolo78](https://www.reddit.com/user/loolo78) implemented [this](https://www.youtube.com/watch?v=GjwoyqNdimY) as a proof of concept to expose a Mecanic state machine to a Unity application via C# events. This implementation builds upon /u/loolo78's work and expands the possibilities this kind of system affords significantly by making it possible to start and end control contexts without crossover between states, even when transition times are used to blend animated visuals such as UI screens or even player character animation states.
+This library is based on [this](https://www.reddit.com/r/Unity3D/comments/39eh4x/tutorial_state_machine_behaviours_discouple/) thread from reddit in which [/u/LightStriker_Qc](https://www.reddit.com/user/LightStriker_Qc) proposed implementing an event-based interface to Mecanim states and [/u/loolo78](https://www.reddit.com/user/loolo78) implemented [this](https://www.youtube.com/watch?v=GjwoyqNdimY) as a proof of concept to expose a Mecanim state machine to a Unity application via C# events. This implementation builds upon /u/loolo78's work and expands the possibilities this kind of system affords significantly by making it possible to start and end control contexts without crossover between states, even when transition times are used to blend animated visuals such as UI screens or even player character animation states. Furthermore, it this solution uses UnityEvents heavily to provide powerful inspector access to any event hooks it exposes.
 
 ![Sample game state machine diagram](https://raw.githubusercontent.com/DigitalMachinist/unity-utilities/master/Assets/Utilities/State%20Machine/StateMachine.png)
 
-This library is compatible with both Unity Free and Unity Pro and should run on Unity versions back to 3.x (and possibly earlier).
+This library is compatible with both Unity Free and Unity Pro and should run on Unity versions back to 3.x.
 
 ## The Problem
 
@@ -19,13 +19,13 @@ The work done by /u/loolo78 is great and accomplishes a lot! It makes it possibl
 
 However, there are some pain points still. Most annoying (in my mind) is that I am unable to set up transition times for my animation states to allow my UI screens to transition smoothly or I will end up with controls enabled for both screens at the same time during the transition because ```OnStateEnter``` will be called for the next state before ```OnStateExit``` is called for the initial state. This doesn't sound like a big deal, but it can get really confusing for players and can lead to some really unusual problems.
 
-If I want to cleanly manage control context, I still need Stateless to take the lead for the Mecanim state machine so I don't have multiple control contexts in effect simultaneously. Obviously, this means **I don't really save any effort at all!**
+If I want to cleanly manage control context, I still need Stateless to take the lead for the Mecanim state machine so I don't have multiple control contexts in effect simultaneously. Of course, this means **I don't really save any effort at all** and things just get more complex again.
 
 ## Taking Control
 
-My mission when developing this state machine implementation was to solve this control issue so that I can handle UI screen animation, state logic and control context all at the same time, in the same place.
+My mission when developing this utility was to solve this control issue so that I can handle UI screen animation (and lots of other stuff), state logic and control context all at the same time, in the same place.
 
-My ```State``` class derives from ```StateMachineBehaviour``` and implements 3 new methods in addition to ```OnStateEnter```, ```OnStateUpdate``` and ```OnStateExit```:
+My ```AnimatorState``` class derives from Unity's ```StateMachineBehaviour``` and implements 3 new methods in addition to ```OnStateEnter```, ```OnStateUpdate``` and ```OnStateExit```:
 
 ```csharp
 public virtual void OnControlEnter( Animator animator, AnimatorStateInfo stateInfo, int layerIndex );
@@ -33,7 +33,7 @@ public virtual void OnControlUpdate( Animator animator, AnimatorStateInfo stateI
 public virtual void OnControlExit( Animator animator, AnimatorStateInfo stateInfo, int layerIndex );
 ```
 
-If you write state scripts that derive from ```State```, you can override these methods to gain access to specially-timed events that guarantee that:
+If you write state scripts that derive from ```AnimatorState```, you can override these methods to gain access to specially-timed events that guarantee that:
 
 1. The next state's ```OnControlEnter``` is always called immediately after ```OnStateExit``` for the current state
 2. The previous state's ```OnControlExit``` is always called immediately after ```OnStateEnter``` for the current state
