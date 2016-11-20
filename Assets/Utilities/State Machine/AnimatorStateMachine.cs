@@ -9,77 +9,81 @@ using UnityEngine;
 [RequireComponent( typeof( Animator ) )]
 public class AnimatorStateMachine : MonoBehaviour
 {
+    public FoldablePromise Ready;
     public List<AnimatorLayer> Layers;
 
     Animator animator;
+
+    public List<AnimatorStateBehaviour> States { get; private set; }
+
     public Animator Animator
     {
         get { return animator ?? ( animator = GetComponent<Animator>() ); }
     }
 
+
     public AnimatorLayer GetLayer( int layerIndex )
     {
         return Layers[ layerIndex ];
     }
-
-    void Awake()
+    public AnimatorLayer GetLayerByName( string layerName )
     {
-        RebuildLayersIfEmpty();
+        var layerIndex = Animator.GetLayerIndex( layerName );
+        return GetLayer( layerIndex );
     }
 
+
+    void OnDisable()
+    {
+        DeregisterEvents();
+    }
     void OnEnable()
     {
         RebuildLayersIfEmpty();
+        RegisterEvents();
     }
-
     void OnValidate()
     {
         RebuildLayersIfEmpty();
     }
 
-    void Start()
-    {
-        // Register event listeners for all of the states.
-        Animator
-            .GetBehaviours<AnimatorState>()
-            .ToList()
-            .ForEach( state => {
-                state.ControlEnter.AddListener( OnStateMachineControlEnter );
-                state.StateEnter.AddListener( OnStateMachineStateEnter );
-                state.ControlExit.AddListener( OnStateMachineControlExit );
-                state.StateExit.AddListener( OnStateMachineStateExit );
-                state.ControlUpdate.AddListener( OnStateMachineStateUpdate );
-                state.StateUpdate.AddListener( OnStateMachineControlUpdate );
-            } );
-    }
 
-    void OnDestroy()
+    void DeregisterEvents()
     {
-        // Deregister event listeners for all of the states.
-        Animator
-            .GetBehaviours<AnimatorState>()
-            .ToList()
-            .ForEach( state => {
-                state.ControlEnter.RemoveListener( OnStateMachineControlEnter );
-                state.StateEnter.RemoveListener( OnStateMachineStateEnter );
-                state.ControlExit.RemoveListener( OnStateMachineControlExit );
-                state.StateExit.RemoveListener( OnStateMachineStateExit );
-                state.ControlUpdate.RemoveListener( OnStateMachineStateUpdate );
-                state.StateUpdate.RemoveListener( OnStateMachineControlUpdate );
-            } );
+        foreach ( var state in States )
+        {
+            state.ControlEnter.RemoveListener( OnStateMachineControlEnter );
+            state.StateEnter.RemoveListener( OnStateMachineStateEnter );
+            state.ControlExit.RemoveListener( OnStateMachineControlExit );
+            state.StateExit.RemoveListener( OnStateMachineStateExit );
+            state.ControlUpdate.RemoveListener( OnStateMachineStateUpdate );
+            state.StateUpdate.RemoveListener( OnStateMachineControlUpdate );
+        }
+        States.Clear();
     }
+    void RegisterEvents()
+    {
+        States = Animator.GetBehaviours<AnimatorStateBehaviour>().ToList();
+        foreach ( var state in States )
+        {
+            state.ControlEnter.AddListener( OnStateMachineControlEnter );
+            state.StateEnter.AddListener( OnStateMachineStateEnter );
+            state.ControlExit.AddListener( OnStateMachineControlExit );
+            state.StateExit.AddListener( OnStateMachineStateExit );
+            state.ControlUpdate.AddListener( OnStateMachineStateUpdate );
+            state.StateUpdate.AddListener( OnStateMachineControlUpdate );
+        }
 
+        // Signal to listeners that we're ready to go.
+        Ready.Invoke();
+    }
     void RebuildLayersIfEmpty()
     {
-        // Create a list of Layer objects mapping to each of the Mechanim layers.
-        if ( Animator != null )
+        if ( Animator == null )
         {
-            RebuildLayers();
+            return;
         }
-    }
 
-    void RebuildLayers()
-    {
         if ( Layers == null )
         {
             // Create a new layer collection, if it's missing.
@@ -104,37 +108,33 @@ public class AnimatorStateMachine : MonoBehaviour
         }
     }
 
-    void OnStateMachineControlEnter( AnimatorState state, Animator anim, AnimatorStateInfo animStateInfo, int layerIndex )
+
+    void OnStateMachineControlEnter( AnimatorStateBehaviour state, Animator anim, AnimatorStateInfo animStateInfo, int layerIndex )
     {
         var layer = GetLayer( layerIndex );
         layer.ControlEnter.Invoke( layer, state );
     }
-
-    void OnStateMachineStateEnter( AnimatorState state, Animator anim, AnimatorStateInfo animStateInfo, int layerIndex )
+    void OnStateMachineStateEnter( AnimatorStateBehaviour state, Animator anim, AnimatorStateInfo animStateInfo, int layerIndex )
     {
         var layer = GetLayer( layerIndex );
         layer.StateEnter.Invoke( layer, state );
     }
-
-    void OnStateMachineControlExit( AnimatorState state, Animator anim, AnimatorStateInfo animStateInfo, int layerIndex )
+    void OnStateMachineControlExit( AnimatorStateBehaviour state, Animator anim, AnimatorStateInfo animStateInfo, int layerIndex )
     {
         var layer = GetLayer( layerIndex );
         layer.ControlExit.Invoke( layer, state );
     }
-
-    void OnStateMachineStateExit( AnimatorState state, Animator anim, AnimatorStateInfo animStateInfo, int layerIndex )
+    void OnStateMachineStateExit( AnimatorStateBehaviour state, Animator anim, AnimatorStateInfo animStateInfo, int layerIndex )
     {
         var layer = GetLayer( layerIndex );
         layer.StateExit.Invoke( layer, state );
     }
-
-    void OnStateMachineControlUpdate( AnimatorState state, Animator anim, AnimatorStateInfo animStateInfo, int layerIndex )
+    void OnStateMachineControlUpdate( AnimatorStateBehaviour state, Animator anim, AnimatorStateInfo animStateInfo, int layerIndex )
     {
         var layer = GetLayer( layerIndex );
         layer.ControlUpdate.Invoke( layer, state );
     }
-
-    void OnStateMachineStateUpdate( AnimatorState state, Animator anim, AnimatorStateInfo animStateInfo, int layerIndex )
+    void OnStateMachineStateUpdate( AnimatorStateBehaviour state, Animator anim, AnimatorStateInfo animStateInfo, int layerIndex )
     {
         var layer = GetLayer( layerIndex );
         layer.StateUpdate.Invoke( layer, state );
